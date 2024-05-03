@@ -30,19 +30,27 @@ def load_policy_and_env(fpath, itr="last", deterministic=False):
         # check filenames for epoch (AKA iteration) numbers, find maximum value
 
         if backend == "tf1":
-            saves = [int(x[8:]) for x in os.listdir(fpath) if "tf1_save" in x and len(x) > 8]
+            saves = [
+                int(x[8:]) for x in os.listdir(fpath) if "tf1_save" in x and len(x) > 8
+            ]
 
         elif backend == "pytorch":
             pytsave_path = osp.join(fpath, "pyt_save")
             # Each file in this folder has naming convention 'modelXX.pt', where
             # 'XX' is either an integer or empty string. Empty string case
             # corresponds to len(x)==8, hence that case is excluded.
-            saves = [int(x.split(".")[0][5:]) for x in os.listdir(pytsave_path) if len(x) > 8 and "model" in x]
+            saves = [
+                int(x.split(".")[0][5:])
+                for x in os.listdir(pytsave_path)
+                if len(x) > 8 and "model" in x
+            ]
 
         itr = "%d" % max(saves) if len(saves) > 0 else ""
 
     else:
-        assert isinstance(itr, int), "Bad value provided for itr (needs to be int or 'last')."
+        assert isinstance(
+            itr, int
+        ), "Bad value provided for itr (needs to be int or 'last')."
         itr = "%d" % itr
 
     # load the get_action function
@@ -146,5 +154,7 @@ if __name__ == "__main__":
     parser.add_argument("--itr", "-i", type=int, default=-1)
     parser.add_argument("--deterministic", "-d", action="store_true")
     args = parser.parse_args()
-    env, get_action = load_policy_and_env(args.fpath, args.itr if args.itr >= 0 else "last", args.deterministic)
+    env, get_action = load_policy_and_env(
+        args.fpath, args.itr if args.itr >= 0 else "last", args.deterministic
+    )
     run_policy(env, get_action, args.len, args.episodes, not (args.norender))

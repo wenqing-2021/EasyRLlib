@@ -43,6 +43,7 @@ def discount_cumsum(x, discount):
     """
     return scipy.signal.lfilter([1], [1, float(-discount)], x[::-1], axis=0)[::-1]
 
+
 class QNet(nn.Module):
     def __init__(self, obs_dim, act_dim, hidden_sizes, activation):
         super().__init__()
@@ -51,6 +52,7 @@ class QNet(nn.Module):
     def forward(self, obs):
         q = self.q_net(obs)
         return torch.squeeze(q, -1)
+
 
 class Actor(nn.Module):
     def _distribution(self, obs):
@@ -96,7 +98,9 @@ class MLPGaussianActor(Actor):
         return Normal(mu, std)
 
     def _log_prob_from_distribution(self, pi, act):
-        return pi.log_prob(act).sum(axis=-1)  # Last axis sum needed for Torch Normal distribution
+        return pi.log_prob(act).sum(
+            axis=-1
+        )  # Last axis sum needed for Torch Normal distribution
 
 
 class MLPCritic(nn.Module):
@@ -105,7 +109,9 @@ class MLPCritic(nn.Module):
         self.v_net = mlp([obs_dim] + list(hidden_sizes) + [1], activation)
 
     def forward(self, obs):
-        return torch.squeeze(self.v_net(obs), -1)  # Critical to ensure v has right shape.
+        return torch.squeeze(
+            self.v_net(obs), -1
+        )  # Critical to ensure v has right shape.
 
 
 # class MLPActorCritic(nn.Module):
