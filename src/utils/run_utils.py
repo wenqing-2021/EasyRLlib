@@ -1,4 +1,9 @@
-from .user_config import DEFAULT_DATA_DIR, FORCE_DATESTAMP, DEFAULT_SHORTHAND, WAIT_BEFORE_LAUNCH
+from .user_config import (
+    DEFAULT_DATA_DIR,
+    FORCE_DATESTAMP,
+    DEFAULT_SHORTHAND,
+    WAIT_BEFORE_LAUNCH,
+)
 from .logx import colorize
 from .mpi_tools import mpi_fork, msg
 from .serialization_utils import convert_json
@@ -85,7 +90,9 @@ def setup_logger_kwargs(exp_name, seed=None, data_dir=None, datestamp=False):
     return logger_kwargs
 
 
-def call_experiment(exp_name, thunk, seed=0, num_cpu=1, data_dir=None, datestamp=False, **kwargs):
+def call_experiment(
+    exp_name, thunk, seed=0, num_cpu=1, data_dir=None, datestamp=False, **kwargs
+):
     """
     Run a function (thunk) with hyperparameters (kwargs), plus configuration.
 
@@ -141,7 +148,9 @@ def call_experiment(exp_name, thunk, seed=0, num_cpu=1, data_dir=None, datestamp
 
     # Set up logger output directory
     if "logger_kwargs" not in kwargs:
-        kwargs["logger_kwargs"] = setup_logger_kwargs(exp_name, seed, data_dir, datestamp)
+        kwargs["logger_kwargs"] = setup_logger_kwargs(
+            exp_name, seed, data_dir, datestamp
+        )
     else:
         print("Note: Call experiment is not handling logger_kwargs.\n")
 
@@ -345,7 +354,9 @@ class ExperimentGrid:
                 inclusion of this parameter into the name.
         """
         assert isinstance(key, str), "Key must be a string."
-        assert shorthand is None or isinstance(shorthand, str), "Shorthand must be a string."
+        assert shorthand is None or isinstance(
+            shorthand, str
+        ), "Shorthand must be a string."
         if not isinstance(vals, list):
             vals = [vals]
         if DEFAULT_SHORTHAND and shorthand is None:
@@ -482,7 +493,9 @@ class ExperimentGrid:
                     new_var[k0][sub_k] = v
                     unflatten_set.add(k0)
                 else:
-                    assert not (k in new_var), "You can't assign multiple values to the same key."
+                    assert not (
+                        k in new_var
+                    ), "You can't assign multiple values to the same key."
                     new_var[k] = v
 
             # Make sure to fill out the nested dicts.
@@ -520,7 +533,9 @@ class ExperimentGrid:
         var_names = set([self.variant_name(var) for var in variants])
         var_names = sorted(list(var_names))
         line = "=" * DIV_LINE_WIDTH
-        preparing = colorize("Preparing to run the following experiments...", color="green", bold=True)
+        preparing = colorize(
+            "Preparing to run the following experiments...", color="green", bold=True
+        )
         joined_var_names = "\n".join(var_names)
         announcement = f"\n{preparing}\n\n{joined_var_names}\n\n{line}"
         print(announcement)
@@ -570,7 +585,14 @@ class ExperimentGrid:
                 # Assume thunk is given as a function.
                 thunk_ = thunk
 
-            call_experiment(exp_name, thunk_, num_cpu=num_cpu, data_dir=data_dir, datestamp=datestamp, **var)
+            call_experiment(
+                exp_name,
+                thunk_,
+                num_cpu=num_cpu,
+                data_dir=data_dir,
+                datestamp=datestamp,
+                **var,
+            )
 
 
 def test_eg():

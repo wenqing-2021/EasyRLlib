@@ -1,0 +1,10 @@
+# this file is the configuration file for the training process
+env_config:
+  name: "CartPole-v1"
+
+train_config:
+  epochs: 25
+  batch_size: 32
+
+agent_config_path: "src/config/agent_config/dqn.yaml"
+agent_name: "DQN"

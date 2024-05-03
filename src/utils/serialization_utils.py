@@ -19,7 +19,9 @@ def convert_json(obj):
             return convert_json(obj.__name__)
 
         elif hasattr(obj, "__dict__") and obj.__dict__:
-            obj_dict = {convert_json(k): convert_json(v) for k, v in obj.__dict__.items()}
+            obj_dict = {
+                convert_json(k): convert_json(v) for k, v in obj.__dict__.items()
+            }
             return {str(obj): obj_dict}
 
         return str(obj)
