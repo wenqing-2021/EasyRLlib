@@ -1,2 +1,2 @@
 hidden_sizes: [64, 64]
-activation_name: "ReLU" 
+activation_name: "Tanh" 

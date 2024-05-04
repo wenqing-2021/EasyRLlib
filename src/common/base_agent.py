@@ -44,17 +44,9 @@ class BaseAgent(ABC, nn.Module):
         pass
 
     @abstractmethod
-    def update_net(self, *args, **kwargs):
+    def learn(self, *args, **kwargs):
         """
-        description: update the network
-        return {*}
-        """
-        pass
-
-    @abstractmethod
-    def _calc_pi_loss(self, *args, **kwargs):
-        """
-        description: calculate the policy loss
+        description: update the network using the batch data
         return {*}
         """
         pass

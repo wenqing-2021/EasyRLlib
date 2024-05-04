@@ -27,17 +27,19 @@ class BaseConfig:
 
 @dataclass
 class EnvConfig(BaseConfig):
-    name: str = None  # the name of the environment
+    env_name: str = None  # the name of the environment
 
 
 @dataclass
 class TrainConfig(BaseConfig):
+    seed: int = 1
     epochs: int = 100
     total_steps: int = 1e6
     num_envs: int = 4
     batch_size: int = 64
     buffer_size: int = 1e5
     update_every: int = 100  # off-policy update every n steps
+    random_explor: int = 1e4  # off-policy random explore steps
 
 
 @dataclass
@@ -54,8 +56,11 @@ class RunConfig(BaseConfig):
     env_config: EnvConfig = None
     train_config: TrainConfig = None
     agent_config: BaseConfig = None
+
     agent_config_path: str = None
     agent_name: str = None
+    save_path: str = None
+    exp_name: str = None
 
 
 AGENT_MAP = {"DQN": DQNConfig}

@@ -11,7 +11,6 @@ import joblib
 import shutil
 import numpy as np
 
-# import tensorflow as tf
 import torch
 import os.path as osp, time, atexit, os
 import warnings
@@ -45,34 +44,6 @@ def colorize(string, color, bold=False, highlight=False):
     if bold:
         attr.append("1")
     return "\x1b[%sm%s\x1b[0m" % (";".join(attr), string)
-
-
-# def restore_tf_graph(sess, fpath):
-#     """
-#     Loads graphs saved by Logger.
-
-#     Will output a dictionary whose keys and values are from the 'inputs'
-#     and 'outputs' dict you specified with logger.setup_tf_saver().
-
-#     Args:
-#         sess: A Tensorflow session.
-#         fpath: Filepath to save directory.
-
-#     Returns:
-#         A dictionary mapping from keys to tensors in the computation graph
-#         loaded from ``fpath``.
-#     """
-#     tf.saved_model.loader.load(sess, [tf.saved_model.tag_constants.SERVING], fpath)
-#     model_info = joblib.load(osp.join(fpath, "model_info.pkl"))
-#     graph = tf.get_default_graph()
-#     model = dict()
-#     model.update(
-#         {k: graph.get_tensor_by_name(v) for k, v in model_info["inputs"].items()}
-#     )
-#     model.update(
-#         {k: graph.get_tensor_by_name(v) for k, v in model_info["outputs"].items()}
-#     )
-#     return model
 
 
 class Logger:
@@ -208,52 +179,8 @@ class Logger:
                 joblib.dump(state_dict, osp.join(self.output_dir, fname))
             except:
                 self.log("Warning: could not pickle state_dict.", color="red")
-            if hasattr(self, "tf_saver_elements"):
-                self._tf_simple_save(itr)
             if hasattr(self, "pytorch_saver_elements"):
                 self._pytorch_simple_save(itr)
-
-    def setup_tf_saver(self, sess, inputs, outputs):
-        """
-        Set up easy model saving for tensorflow.
-
-        Call once, after defining your computation graph but before training.
-
-        Args:
-            sess: The Tensorflow session in which you train your computation
-                graph.
-
-            inputs (dict): A dictionary that maps from keys of your choice
-                to the tensorflow placeholders that serve as inputs to the
-                computation graph. Make sure that *all* of the placeholders
-                needed for your outputs are included!
-
-            outputs (dict): A dictionary that maps from keys of your choice
-                to the outputs from your computation graph.
-        """
-        self.tf_saver_elements = dict(session=sess, inputs=inputs, outputs=outputs)
-        self.tf_saver_info = {
-            "inputs": {k: v.name for k, v in inputs.items()},
-            "outputs": {k: v.name for k, v in outputs.items()},
-        }
-
-    # def _tf_simple_save(self, itr=None):
-    #     """
-    #     Uses simple_save to save a trained model, plus info to make it easy
-    #     to associated tensors to variables after restore.
-    #     """
-    #     if proc_id() == 0:
-    #         assert hasattr(
-    #             self, "tf_saver_elements"
-    #         ), "First have to setup saving with self.setup_tf_saver"
-    #         fpath = "tf1_save" + ("%d" % itr if itr is not None else "")
-    #         fpath = osp.join(self.output_dir, fpath)
-    #         if osp.exists(fpath):
-    #             # simple_save refuses to be useful if fpath already exists,
-    #             # so just delete fpath if it's there.
-    #             shutil.rmtree(fpath)
-    #         tf.saved_model.simple_save(export_dir=fpath, **self.tf_saver_elements)
-    #         joblib.dump(self.tf_saver_info, osp.join(fpath, "model_info.pkl"))
 
     def setup_pytorch_saver(self, what_to_save):
         """
@@ -414,3 +341,64 @@ class EpochLogger(Logger):
             else v
         )
         return mpi_statistics_scalar(vals)
+
+    @staticmethod
+    def setup_logger_kwargs(exp_name, seed=None, data_dir=None, datestamp=True):
+        """
+        Sets up the output_dir for a logger and returns a dict for logger kwargs.
+
+        If no seed is given and datestamp is false,
+
+        ::
+
+            output_dir = data_dir/exp_name
+
+        If a seed is given and datestamp is false,
+
+        ::
+
+            output_dir = data_dir/exp_name/exp_name_s[seed]
+
+        If datestamp is true, amend to
+
+        ::
+
+            output_dir = data_dir/YY-MM-DD_exp_name/YY-MM-DD_HH-MM-SS_exp_name_s[seed]
+
+        You can force datestamp=True by setting ``FORCE_DATESTAMP=True`` in
+        ``spinup/user_config.py``.
+
+        Args:
+
+            exp_name (string): Name for experiment.
+
+            seed (int): Seed for random number generators used by experiment.
+
+            data_dir (string): Path to folder where results should be saved.
+                Default is the ``DEFAULT_DATA_DIR`` in ``spinup/user_config.py``.
+
+            datestamp (bool): Whether to include a date and timestamp in the
+                name of the save directory.
+
+        Returns:
+
+            logger_kwargs, a dict containing output_dir and exp_name.
+        """
+        if data_dir is None:
+            raise ValueError("data_dir must be specified!")
+
+        # Make base path
+        ymd_time = time.strftime("%Y%m%d_") if datestamp else ""
+        relpath = "".join([ymd_time, exp_name])
+
+        if seed is not None:
+            # Make a seed-specific subfolder in the experiment directory.
+            if datestamp:
+                hms_time = time.strftime("%Y-%m-%d_%H-%M-%S")
+                subfolder = "".join([hms_time, "-", exp_name, "_s", str(seed)])
+            else:
+                subfolder = "".join([exp_name, "_s", str(seed)])
+            relpath = osp.join(relpath, subfolder)
+
+        logger_kwargs = dict(output_dir=osp.join(data_dir, relpath), exp_name=exp_name)
+        return logger_kwargs

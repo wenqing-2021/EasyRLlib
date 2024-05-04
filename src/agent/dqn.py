@@ -19,7 +19,7 @@ class DQN(BaseAgent):
         self.hidden_sizes = configure.agent_config.hidden_sizes
         self.q_lr = configure.agent_config.q_lr
         self.activation = configure.agent_config.activation
-        self.q_net = QNet(
+        self.policy = QNet(
             obs_dim=self.obs_dim,
             act_dim=self.act_dim,
             hidden_sizes=self.hidden_sizes,
@@ -27,4 +27,7 @@ class DQN(BaseAgent):
         )
 
     def act(self, obs) -> np.ndarray:
+        pass
+
+    def learn(self) -> None:
         pass
