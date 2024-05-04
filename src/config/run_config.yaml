@@ -1,6 +1,6 @@
 # this file is the configuration file for the training process
 env_config:
-  name: "CartPole-v1"
+  env_name: "CartPole-v1"
 
 train_config:
   epochs: 25
