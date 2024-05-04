@@ -1,6 +1,6 @@
-from src.common.networks import QNet
-from src.common.base_agent import BaseAgent
-from src.config.configure import RunConfig, DQNConfig
+from common.networks import QNet
+from common.base_agent import BaseAgent
+from config.configure import RunConfig, DQNConfig
 import numpy as np
 import gymnasium as gym
 from gymnasium.spaces import Box, Discrete

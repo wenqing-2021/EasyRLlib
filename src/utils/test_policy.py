@@ -4,7 +4,6 @@ import os
 import os.path as osp
 import torch
 import EpochLogger
-from logx import restore_tf_graph
 
 
 def load_policy_and_env(fpath, itr="last", deterministic=False):
@@ -68,31 +67,6 @@ def load_policy_and_env(fpath, itr="last", deterministic=False):
         env = None
 
     return env, get_action
-
-
-def load_tf_policy(fpath, itr, deterministic=False):
-    """Load a tensorflow policy saved with Spinning Up Logger."""
-
-    fname = osp.join(fpath, "tf1_save" + itr)
-    print("\n\nLoading from %s.\n\n" % fname)
-
-    # load the things!
-    sess = tf.Session()
-    model = restore_tf_graph(sess, fname)
-
-    # get the correct op for executing actions
-    if deterministic and "mu" in model.keys():
-        # 'deterministic' is only a valid option for SAC policies
-        print("Using deterministic action op.")
-        action_op = model["mu"]
-    else:
-        print("Using default action op.")
-        action_op = model["pi"]
-
-    # make function for producing an action given a single state
-    get_action = lambda x: sess.run(action_op, feed_dict={model["x"]: x[None, :]})[0]
-
-    return get_action
 
 
 def load_pytorch_policy(fpath, itr, deterministic=False):

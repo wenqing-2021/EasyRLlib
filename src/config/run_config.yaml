@@ -3,8 +3,16 @@ env_config:
   env_name: "CartPole-v1"
 
 train_config:
+  seed: 1
   epochs: 25
+  total_steps: 1000000
+  num_envs: 4
   batch_size: 32
+  buffer_size: 256
+  update_every: 25
+  random_explor_steps: 20000
 
 agent_config_path: "src/config/agent_config/dqn.yaml"
 agent_name: "DQN"
+exp_name: "DQN"
+save_path: "output/"

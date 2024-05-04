@@ -39,7 +39,7 @@ class TrainConfig(BaseConfig):
     batch_size: int = 64
     buffer_size: int = 1e5
     update_every: int = 100  # off-policy update every n steps
-    random_explor: int = 1e4  # off-policy random explore steps
+    random_explor_steps: int = 1e4  # off-policy random explore steps
 
 
 @dataclass
@@ -73,7 +73,7 @@ ACTIVATION_MAP = {
 }
 
 
-def load_config(config_path: str = None):
+def load_config(config_path: str = None) -> RunConfig:
     if config_path is None:
         config_path = "src/config/run_config.yaml"
 
