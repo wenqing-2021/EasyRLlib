@@ -2,18 +2,18 @@ import torch
 import numpy as np
 import gymnasium as gym
 from gymnasium.spaces import Box, Discrete
-from src.config.configure import RunConfig
-from src.utils.logx import EpochLogger
-from src.utils.mpi_pytorch import setup_pytorch_for_mpi, sync_params, mpi_avg_grads
-from src.utils.mpi_tools import (
+from config.configure import RunConfig
+from utils.logx import EpochLogger
+from utils.mpi_pytorch import setup_pytorch_for_mpi, sync_params, mpi_avg_grads
+from utils.mpi_tools import (
     mpi_avg,
     proc_id,
     mpi_statistics_scalar,
     num_procs,
 )
-from src.common.base_agent import BaseAgent
-from src.common.buffer import OffPolicyBuffer
-from src.common.networks import count_vars
+from common.base_agent import BaseAgent
+from common.buffer import OffPolicyBuffer
+from common.networks import count_vars
 
 
 class BaseTrainer:
@@ -49,10 +49,11 @@ class OffPolicyTrain(BaseTrainer):
         super().__init__(configure, env)
         self.update_every = self.configure.train_config.update_every
 
-    def _random_explore(self, buffer: OffPolicyBuffer) -> None:
-        for _ in range(self.configure.train_config.random_explor):
+    def _random_explore(self, buffer: OffPolicyBuffer, seed) -> None:
+        obs, _ = self.env.reset(seed=seed)
+        for _ in range(self.configure.train_config.random_explor_steps):
             act = self.env.action_space.sample()
-            next_obs, rew, done, _ = self.env.step(act)
+            next_obs, rew, done, _, info = self.env.step(act)
             buffer.store(obs, act, next_obs, rew, done)
             if done:
                 obs, _ = self.env.reset()
@@ -89,7 +90,7 @@ class OffPolicyTrain(BaseTrainer):
 
         # Random Exploration
         self.logger.log("Start to colect random action data.", color="green")
-        self._random_explore(buffer)
+        self._random_explore(buffer, seed)
 
         # Main loop: collect experience in env and update agent with off-policy
         self.logger.log("Start to train the model!", color="green")

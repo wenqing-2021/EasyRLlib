@@ -343,7 +343,7 @@ class EpochLogger(Logger):
         return mpi_statistics_scalar(vals)
 
     @staticmethod
-    def setup_logger_kwargs(exp_name, seed=None, data_dir=None, datestamp=True):
+    def setup_logger_kwargs(exp_name, seed=None, data_dir=None, datestamp=False):
         """
         Sets up the output_dir for a logger and returns a dict for logger kwargs.
 
@@ -394,7 +394,7 @@ class EpochLogger(Logger):
         if seed is not None:
             # Make a seed-specific subfolder in the experiment directory.
             if datestamp:
-                hms_time = time.strftime("%Y-%m-%d_%H-%M-%S")
+                hms_time = time.strftime("%Y%m%d_%H%M%S")
                 subfolder = "".join([hms_time, "-", exp_name, "_s", str(seed)])
             else:
                 subfolder = "".join([exp_name, "_s", str(seed)])

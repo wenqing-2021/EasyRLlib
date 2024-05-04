@@ -68,7 +68,7 @@ class OffPolicyBuffer(BaseBuffer):
         self.obs_dim = obs_dim
         self.act_dim = act_dim
         self.count = 0
-        self._initialize()
+        self._initialize(obs_dim, act_dim)
 
     def store(self, obs, act, next_obs, rew, done):
         self.data.obs[self.count] = obs
