@@ -1,16 +1,27 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import Union
 import torch
 import numpy as np
 
 
 @dataclass
 class BufferData:
-    obs: np.ndarray = None
-    act: np.ndarray = None
-    next_obs: np.ndarray = None
-    rew: np.ndarray = None
-    done: np.ndarray = None
+    obs: Union[np.ndarray, torch.Tensor] = None
+    act: Union[np.ndarray, torch.Tensor] = None
+    next_obs: Union[np.ndarray, torch.Tensor] = None
+    rew: Union[np.ndarray, torch.Tensor] = None
+    done: Union[np.ndarray, torch.Tensor] = None
+
+    def convert_to_tensor(self):
+        for k, v in self.__dict__.items():
+            if v is not None and isinstance(v, np.ndarray):
+                self.__dict__[k] = torch.as_tensor(v, dtype=torch.float64)
+
+    def convert_to_array(self):
+        for k, v in self.__dict__.items():
+            if v is not None and isinstance(v, torch.Tensor):
+                self.__dict__[k] = v.numpy()
 
 
 class BaseBuffer(ABC):

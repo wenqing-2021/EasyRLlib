@@ -13,6 +13,8 @@ import numpy as np
 from abc import ABC, abstractmethod
 import gymnasium as gym
 from gymnasium.spaces import Box, Discrete
+from common.buffer import BufferData
+from typing import List
 
 
 class BaseAgent(ABC, nn.Module):
@@ -30,6 +32,9 @@ class BaseAgent(ABC, nn.Module):
         super().__init__()
         self.observation_space = observation_space
         self.action_space = action_space
+        self.tau: float = None
+        self.target_net_list: List[nn.Module] = []
+        self.current_net_list: List[nn.Module] = []
         if device is None:
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         else:
@@ -44,49 +49,30 @@ class BaseAgent(ABC, nn.Module):
         pass
 
     @abstractmethod
-    def learn(self, *args, **kwargs):
+    def learn(self, batch_data: BufferData, **kwargs):
         """
         description: update the network using the batch data
         return {*}
         """
         pass
 
-    def _optimizer_update(
+    def set_soft_update(
         self,
-        optimizer: torch.optim.Optimizer,
-        loss: torch.Tensor,
-        clip_grad_norm: float = None,
+        target_net_list: List[nn.Module],
+        current_net_list: List[nn.Module],
+        tau: float = 0.005,
     ):
-        """
-        description:
-        param {*} self
-        param {torch.optim.Optimizer} optimizer
-        param {torch.Tensor} loss
-        param {float} clip_grad_norm: clip the gradient norm
-        return {*}
-        """
-        if clip_grad_norm is not None:
-            optimizer.zero_grad()
-            loss.backward()
-            nn.utils.clip_grad_norm_(
-                parameters=optimizer.param_groups[0]["params"], max_norm=clip_grad_norm
-            )
-            optimizer.step()
-        else:
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+        self.target_net_list = target_net_list
+        self.current_net_list = current_net_list
+        self.tau = tau
 
-    def _soft_update(
-        self, target_net: torch.nn.Module, current_net: torch.nn.Module, tau: float
-    ):
-        """
-        description:
-        param {*} self
-        param {torch.nn.module} target_net
-        param {torch.nn.module} current_net
-        param {float} tau
-        return {*}
-        """
-        for tar, cur in zip(target_net.parameters(), current_net.parameters()):
-            tar.data.copy_(cur.data * tau + tar.data * (1.0 - tau))
+    def soft_update(self):
+        if self.tau is None:
+            raise ValueError("The tau is not set!")
+        if len(self.target_net_list) != len(self.current_net_list):
+            raise ValueError("The target and current network list should be the same!")
+        if len(self.target_net_list) < 1:
+            raise ValueError("The target network list is empty!")
+        for target_net, current_net in zip(self.target_net_list, self.current_net_list):
+            for tar, cur in zip(target_net.parameters(), current_net.parameters()):
+                tar.data.copy_(cur.data * self.tau + tar.data * (1.0 - self.tau))

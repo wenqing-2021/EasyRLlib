@@ -4,7 +4,7 @@ import gymnasium as gym
 from gymnasium.spaces import Box, Discrete
 from config.configure import RunConfig
 from utils.logx import EpochLogger
-from utils.mpi_pytorch import setup_pytorch_for_mpi, sync_params, mpi_avg_grads
+from utils.mpi_pytorch import setup_pytorch_for_mpi, sync_params
 from utils.mpi_tools import (
     mpi_avg,
     proc_id,
@@ -17,9 +17,12 @@ from common.networks import count_vars
 
 
 class BaseTrainer:
-    def __init__(self, configure: RunConfig = None, env: gym.Env = None) -> None:
+    def __init__(
+        self, configure: RunConfig = None, env: gym.Env = None, agent: BaseAgent = None
+    ) -> None:
         self.configure = configure
         self.env = env
+        self.agent = agent
         # Special function to avoid certain slowdowns from PyTorch + MPI combo.
         setup_pytorch_for_mpi()
 
@@ -48,6 +51,10 @@ class OffPolicyTrain(BaseTrainer):
     def __init__(self, configure: RunConfig = None, env: gym.Env = None) -> None:
         super().__init__(configure, env)
         self.update_every = self.configure.train_config.update_every
+        self.soft_update_every = self.configure.train_config.soft_update_every
+        self.steps_per_epoch = int(
+            self.configure.train_config.total_steps / self.configure.train_config.epochs
+        )
 
     def _random_explore(self, buffer: OffPolicyBuffer, seed) -> None:
         obs, _ = self.env.reset(seed=seed)
@@ -60,11 +67,32 @@ class OffPolicyTrain(BaseTrainer):
             else:
                 obs = next_obs
 
-    def train(self, agent: BaseAgent = None) -> None:
+    def _agent_explore_learn(self, buffer: OffPolicyBuffer = None) -> None:
+        obs, _ = self.env.reset()
+        ep_rew, ep_steps = 0, 0
+        for steps in self.steps_per_epoch:
+            act = self.agent.act(obs)
+            next_obs, rew, done, _, info = self.env.step(act)
+            if steps % self.update_every == 0:
+                batch_data = buffer.get()
+                self.agent.learn(batch_data)
+            if steps % self.soft_update_every == 0:
+                self.agent.soft_update()
+            buffer.store(obs, act, next_obs, rew, done)
+            if done:
+                obs, _ = self.env.reset()
+                ep_rew, ep_steps = 0, 0
+                self.logger.store(EpRet=ep_rew, EpLen=ep_steps)
+            else:
+                obs = next_obs
+                ep_rew += rew
+                ep_steps += 1
+
+    def train(self) -> None:
         # Setup agent and count vars
-        self.logger.setup_pytorch_saver(agent)
-        sync_params(agent)
-        var_counts = count_vars(agent)
+        self.logger.setup_pytorch_saver(self.agent)
+        sync_params(self.agent)
+        var_counts = count_vars(self.agent)
         self.logger.log("\nNumber of the model parameters: %d\n" % var_counts)
 
         # Setup buffer
@@ -83,9 +111,6 @@ class OffPolicyTrain(BaseTrainer):
 
         # Reset the environment
         obs, _ = self.env.reset()
-        steps_per_epoch = int(
-            self.configure.train_config.total_steps / self.configure.train_config.epochs
-        )
         local_epochs = int(self.configure.train_config.epochs / num_procs())
 
         # Random Exploration
@@ -94,7 +119,14 @@ class OffPolicyTrain(BaseTrainer):
 
         # Main loop: collect experience in env and update agent with off-policy
         self.logger.log("Start to train the model!", color="green")
-        return
+        for epoch in range(local_epochs):
+            self._agent_explore_learn(buffer=buffer, logger=self.logger)
+
+            # store the nessarry information
+            self.logger.log_tabular("Epoch", epoch)
+            self.logger.log_tabular("EpRet", with_min_and_max=True)
+            self.logger.log_tabular("EpLen", average_only=True)
+            self.logger.dump_tabular()
 
 
 class OnPolicyTrain:
