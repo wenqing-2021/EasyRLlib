@@ -40,6 +40,7 @@ class TrainConfig(BaseConfig):
     buffer_size: int = 1e5
     update_every: int = 100  # off-policy update every n steps
     random_explor_steps: int = 1e4  # off-policy random explore steps
+    soft_update_every: int = 100  # soft update target network every n steps
 
 
 @dataclass
@@ -49,6 +50,7 @@ class DQNConfig(BaseConfig):
     gamma: float = 0.99
     epsilon: float = 0.1  # epsilon greedy exploration
     activation_name: str = "Tanh"
+    tau: float = 0.005
 
 
 @dataclass

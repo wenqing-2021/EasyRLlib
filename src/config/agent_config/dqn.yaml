@@ -1,2 +1,6 @@
 hidden_sizes: [64, 64]
 activation_name: "Tanh" 
+q_lr: 0.001
+gamma: 0.99
+epsilon: 0.1 # epsilon greedy exploration
+tau: 0.005 # target network update rate
