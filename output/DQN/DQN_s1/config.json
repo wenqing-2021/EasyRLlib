@@ -1,8 +1,8 @@
 {
     "configure":	{
-        "RunConfig(env_config=EnvConfig(env_name='CartPole-v1'), train_config=TrainConfig(seed=1, epochs=25, total_steps=1000000, num_envs=4, batch_size=32, buffer_size=256, update_every=25, random_explor_steps=20000), agent_config=DQNConfig(q_lr=0.001, hidden_sizes=[64, 64], gamma=0.99, epsilon=0.1, activation_name='Tanh'), agent_config_path='src/config/agent_config/dqn.yaml', agent_name='DQN', save_path='output/', exp_name='DQN')":	{
+        "RunConfig(env_config=EnvConfig(env_name='CartPole-v1'), train_config=TrainConfig(seed=1, epochs=25, total_steps=1000000, num_envs=1, batch_size=32, buffer_size=256, update_every=25, random_explor_steps=20000, soft_update_every=100), agent_config=DQNConfig(q_lr=0.001, hidden_sizes=[64, 64], gamma=0.99, epsilon=0.1, activation_name='Tanh', tau=0.005), agent_config_path='src/config/agent_config/dqn.yaml', agent_name='DQN', save_path='output/', exp_name='DQN')":	{
             "agent_config":	{
-                "DQNConfig(q_lr=0.001, hidden_sizes=[64, 64], gamma=0.99, epsilon=0.1, activation_name='Tanh')":	{
+                "DQNConfig(q_lr=0.001, hidden_sizes=[64, 64], gamma=0.99, epsilon=0.1, activation_name='Tanh', tau=0.005)":	{
                     "activation":	"Tanh",
                     "activation_name":	"Tanh",
                     "epsilon":	0.1,
@@ -11,7 +11,8 @@
                         64,
                         64
                     ],
-                    "q_lr":	0.001
+                    "q_lr":	0.001,
+                    "tau":	0.005
                 }
             },
             "agent_config_path":	"src/config/agent_config/dqn.yaml",
@@ -24,13 +25,14 @@
             "exp_name":	"DQN",
             "save_path":	"output/",
             "train_config":	{
-                "TrainConfig(seed=1, epochs=25, total_steps=1000000, num_envs=4, batch_size=32, buffer_size=256, update_every=25, random_explor_steps=20000)":	{
+                "TrainConfig(seed=1, epochs=25, total_steps=1000000, num_envs=1, batch_size=32, buffer_size=256, update_every=25, random_explor_steps=20000, soft_update_every=100)":	{
                     "batch_size":	32,
                     "buffer_size":	256,
                     "epochs":	25,
-                    "num_envs":	4,
+                    "num_envs":	1,
                     "random_explor_steps":	20000,
                     "seed":	1,
+                    "soft_update_every":	100,
                     "total_steps":	1000000,
                     "update_every":	25
                 }
@@ -151,11 +153,11 @@
         "output_dir":	"output/DQN/DQN_s1"
     },
     "self":	{
-        "<policy_train.OffPolicyTrain object at 0x7ff4576a4c70>":	{
+        "<policy_train.OffPolicyTrain object at 0x7ff1333e6940>":	{
             "configure":	{
-                "RunConfig(env_config=EnvConfig(env_name='CartPole-v1'), train_config=TrainConfig(seed=1, epochs=25, total_steps=1000000, num_envs=4, batch_size=32, buffer_size=256, update_every=25, random_explor_steps=20000), agent_config=DQNConfig(q_lr=0.001, hidden_sizes=[64, 64], gamma=0.99, epsilon=0.1, activation_name='Tanh'), agent_config_path='src/config/agent_config/dqn.yaml', agent_name='DQN', save_path='output/', exp_name='DQN')":	{
+                "RunConfig(env_config=EnvConfig(env_name='CartPole-v1'), train_config=TrainConfig(seed=1, epochs=25, total_steps=1000000, num_envs=1, batch_size=32, buffer_size=256, update_every=25, random_explor_steps=20000, soft_update_every=100), agent_config=DQNConfig(q_lr=0.001, hidden_sizes=[64, 64], gamma=0.99, epsilon=0.1, activation_name='Tanh', tau=0.005), agent_config_path='src/config/agent_config/dqn.yaml', agent_name='DQN', save_path='output/', exp_name='DQN')":	{
                     "agent_config":	{
-                        "DQNConfig(q_lr=0.001, hidden_sizes=[64, 64], gamma=0.99, epsilon=0.1, activation_name='Tanh')":	{
+                        "DQNConfig(q_lr=0.001, hidden_sizes=[64, 64], gamma=0.99, epsilon=0.1, activation_name='Tanh', tau=0.005)":	{
                             "activation":	"Tanh",
                             "activation_name":	"Tanh",
                             "epsilon":	0.1,
@@ -164,7 +166,8 @@
                                 64,
                                 64
                             ],
-                            "q_lr":	0.001
+                            "q_lr":	0.001,
+                            "tau":	0.005
                         }
                     },
                     "agent_config_path":	"src/config/agent_config/dqn.yaml",
@@ -177,13 +180,14 @@
                     "exp_name":	"DQN",
                     "save_path":	"output/",
                     "train_config":	{
-                        "TrainConfig(seed=1, epochs=25, total_steps=1000000, num_envs=4, batch_size=32, buffer_size=256, update_every=25, random_explor_steps=20000)":	{
+                        "TrainConfig(seed=1, epochs=25, total_steps=1000000, num_envs=1, batch_size=32, buffer_size=256, update_every=25, random_explor_steps=20000, soft_update_every=100)":	{
                             "batch_size":	32,
                             "buffer_size":	256,
                             "epochs":	25,
-                            "num_envs":	4,
+                            "num_envs":	1,
                             "random_explor_steps":	20000,
                             "seed":	1,
+                            "soft_update_every":	100,
                             "total_steps":	1000000,
                             "update_every":	25
                         }
@@ -299,7 +303,7 @@
                 }
             },
             "logger":	{
-                "<utils.logx.EpochLogger object at 0x7ff4576a48e0>":	{
+                "<utils.logx.EpochLogger object at 0x7ff1333e69d0>":	{
                     "epoch_dict":	{},
                     "exp_name":	"DQN",
                     "first_row":	true,

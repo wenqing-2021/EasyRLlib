@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 import gymnasium as gym
+from abc import ABC, abstractmethod
 from gymnasium.spaces import Box, Discrete
 from config.configure import RunConfig
 from utils.logx import EpochLogger
@@ -16,13 +17,10 @@ from common.buffer import OffPolicyBuffer
 from common.networks import count_vars
 
 
-class BaseTrainer:
-    def __init__(
-        self, configure: RunConfig = None, env: gym.Env = None, agent: BaseAgent = None
-    ) -> None:
+class BaseTrainer(ABC):
+    def __init__(self, configure: RunConfig = None, env: gym.Env = None) -> None:
         self.configure = configure
         self.env = env
-        self.agent = agent
         # Special function to avoid certain slowdowns from PyTorch + MPI combo.
         setup_pytorch_for_mpi()
 
@@ -34,6 +32,13 @@ class BaseTrainer:
         )
         self.logger = EpochLogger(**logger_kwargs)
         self.logger.save_config(locals())
+
+    @abstractmethod
+    def train(self, agent: BaseAgent) -> None:
+        """
+        description: train the agent
+        """
+        pass
 
     def _get_act_dim(self):
         act_dim = None
@@ -67,41 +72,44 @@ class OffPolicyTrain(BaseTrainer):
             else:
                 obs = next_obs
 
-    def _agent_explore_learn(self, buffer: OffPolicyBuffer = None) -> None:
+    def _agent_explore_learn(
+        self, buffer: OffPolicyBuffer = None, agent: BaseAgent = None
+    ) -> None:
         obs, _ = self.env.reset()
         ep_rew, ep_steps = 0, 0
-        for steps in self.steps_per_epoch:
-            act = self.agent.act(obs)
+        for steps in range(self.steps_per_epoch):
+            act = agent.act(obs)
             next_obs, rew, done, _, info = self.env.step(act)
             if steps % self.update_every == 0:
                 batch_data = buffer.get()
-                self.agent.learn(batch_data)
+                agent.learn(batch_data)
             if steps % self.soft_update_every == 0:
-                self.agent.soft_update()
+                agent.soft_update()
             buffer.store(obs, act, next_obs, rew, done)
             if done:
                 obs, _ = self.env.reset()
-                ep_rew, ep_steps = 0, 0
                 self.logger.store(EpRet=ep_rew, EpLen=ep_steps)
+                ep_rew, ep_steps = 0, 0
             else:
                 obs = next_obs
                 ep_rew += rew
                 ep_steps += 1
 
-    def train(self) -> None:
+    def train(self, agent) -> None:
         # Setup agent and count vars
-        self.logger.setup_pytorch_saver(self.agent)
-        sync_params(self.agent)
-        var_counts = count_vars(self.agent)
+        self.logger.setup_pytorch_saver(agent)
+        sync_params(agent)
+        var_counts = count_vars(agent)
         self.logger.log("\nNumber of the model parameters: %d\n" % var_counts)
 
         # Setup buffer
-        act_dim = self._get_act_dim()
+        # act_dim = self._get_act_dim()
         buffer = OffPolicyBuffer(
             buffer_size=self.configure.train_config.buffer_size,
             batch_size=self.configure.train_config.batch_size,
-            obs_dim=self.env.observation_space.shape[0],
-            act_dim=act_dim,
+            obs_shape=self.env.observation_space.shape,
+            act_shape=self.env.action_space.shape,
+            device=agent.device,
         )
 
         # Random Seed
@@ -114,13 +122,13 @@ class OffPolicyTrain(BaseTrainer):
         local_epochs = int(self.configure.train_config.epochs / num_procs())
 
         # Random Exploration
-        self.logger.log("Start to colect random action data.", color="green")
+        self.logger.log("Start to colect random action data...\n", color="green")
         self._random_explore(buffer, seed)
 
         # Main loop: collect experience in env and update agent with off-policy
-        self.logger.log("Start to train the model!", color="green")
+        self.logger.log("Start to train the model!\n", color="green")
         for epoch in range(local_epochs):
-            self._agent_explore_learn(buffer=buffer, logger=self.logger)
+            self._agent_explore_learn(buffer=buffer, agent=agent)
 
             # store the nessarry information
             self.logger.log_tabular("Epoch", epoch)

@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Python: Debug",
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",
@@ -13,6 +13,10 @@
             "justMyCode": true,
             "cwd": "${workspaceFolder}",
             "envFile": "${workspaceFolder}/.env",
+            "args": [
+                "--num_envs",
+                "1",
+            ]
         },
     ]
 }
