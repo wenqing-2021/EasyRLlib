@@ -34,7 +34,7 @@ class DQN(BaseAgent):
             act_dim=self.act_dim,
             hidden_sizes=self.hidden_sizes,
             activation=self.activation,
-        )
+        ).to(self.device)
         self.target_q = copy.deepcopy(self.policy)
         self.policy_optimizer = torch.optim.AdamW(
             self.policy.parameters(), lr=self.q_lr
@@ -45,9 +45,10 @@ class DQN(BaseAgent):
 
     def act(self, obs) -> np.ndarray:
         if not isinstance(obs, torch.Tensor):
-            obs = torch.as_tensor(obs, dtype=torch.float64)
-        if np.random.rand() < self.epsilon:
-            action = self.policy.forward(obs).argmax(dim=1, keepdim=True).numpy()
+            obs = torch.as_tensor(obs, dtype=torch.float32, device=self.device)
+        if np.random.rand() >= self.epsilon:
+            action = self.policy.forward(obs)
+            action = action.argmax(dim=-1, keepdim=False).cpu().numpy()
         else:
             action = np.random.randint(0, self.act_dim)
 
@@ -59,10 +60,10 @@ class DQN(BaseAgent):
             obs = batch_data.obs
             act = batch_data.act
             next_obs = batch_data.next_obs
-            next_q = self.target_q.forward(next_obs).max(dim=1, keepdim=True)[0]
+            next_q = self.target_q.forward(next_obs).max(dim=-1, keepdim=True)[0]
             target_q = batch_data.rew + self.gamma * (1 - batch_data.done) * next_q
 
-        q = self.policy.forward(obs).gather(1, act.long())
+        q = self.policy.forward(obs).gather(dim=-1, index=act.long().unsqueeze(1))
         loss = nn.functional.mse_loss(q, target_q)
 
         self.policy_optimizer.zero_grad()

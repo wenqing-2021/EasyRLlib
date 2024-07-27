@@ -8,12 +8,6 @@ from torch.distributions.normal import Normal
 from torch.distributions.categorical import Categorical
 
 
-def combined_shape(length, shape=None):
-    if shape is None:
-        return (length,)
-    return (length, shape) if np.isscalar(shape) else (length, *shape)
-
-
 def mlp(sizes, activation, output_activation=nn.Identity):
     layers = []
     for j in range(len(sizes) - 1):
