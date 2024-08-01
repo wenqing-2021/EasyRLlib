@@ -137,5 +137,5 @@ class OffPolicyTrain(BaseTrainer):
             self.logger.dump_tabular()
 
 
-class OnPolicyTrain:
+class OnPolicyTrain(BaseTrainer):
     pass

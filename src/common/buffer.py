@@ -50,8 +50,7 @@ class BaseBuffer(ABC):
         super().__init__()
         self.buffer_size = buffer_size
         self.batch_size = batch_size
-        self.data = BufferData()
-        self.data.device = device
+        self.data = BufferData(device=device)
 
     @abstractmethod
     def store(self, *args, **kwargs):
@@ -69,20 +68,20 @@ class BaseBuffer(ABC):
         """
         pass
 
-    def combined_shape(self, length, shape=None):
+    def _combined_shape(self, length, shape=None):
         if shape is None:
             return (length,)
         return (length, shape) if np.isscalar(shape) else (length, *shape)
 
     def _initialize(self, obs_shape=None, act_shape=None):
         self.data.obs = np.zeros(
-            self.combined_shape(self.buffer_size, obs_shape), dtype=np.float32
+            self._combined_shape(self.buffer_size, obs_shape), dtype=np.float32
         )
         self.data.act = np.zeros(
-            self.combined_shape(self.buffer_size, act_shape), dtype=np.float32
+            self._combined_shape(self.buffer_size, act_shape), dtype=np.float32
         )
         self.data.next_obs = np.zeros(
-            self.combined_shape(self.buffer_size, obs_shape), dtype=np.float32
+            self._combined_shape(self.buffer_size, obs_shape), dtype=np.float32
         )
         self.data.rew = np.zeros((self.buffer_size, 1), dtype=np.float32)
         self.data.done = np.zeros((self.buffer_size, 1), dtype=np.float32)
@@ -114,8 +113,7 @@ class OffPolicyBuffer(BaseBuffer):
             self.count = 0
 
     def get(self) -> BufferData:
-        batch_data = BufferData()
-        batch_data.device = self.data.device
+        batch_data = BufferData(device=self.data.device)
         if self.count < self.batch_size:
             for k, v in self.data.__dict__.items():
                 if v is not None and isinstance(v, np.ndarray):
@@ -127,3 +125,57 @@ class OffPolicyBuffer(BaseBuffer):
                     batch_data.__dict__[k] = v[idx]
 
         return batch_data
+
+
+class OnPolicyBuffer(BaseBuffer):
+    def __init__(
+        self,
+        buffer_size: int = None,
+        batch_size: int = None,
+        obs_shape=None,
+        act_shape=None,
+        device: torch.device = None,
+    ) -> None:
+        super().__init__(buffer_size, batch_size, device)
+        self.obs_shape = obs_shape
+        self.act_shape = act_shape
+        self.count = 0
+        self._initialize(obs_shape, act_shape)
+
+    def _initialize(self, obs_shape=None, act_shape=None):
+        super()._initialize(obs_shape, act_shape)
+        log_pi = np.zeros((self.buffer_size, 1), dtype=np.float32)
+        state_value = np.zeros((self.buffer_size, 1), dtype=np.float32)
+        self.data.__setattr__("log_pi", log_pi)
+        self.data.__setattr__("state_value", state_value)
+
+    def clear(self):
+        self._initialize(self.obs_shape, self.act_shape)
+
+    def store(
+        self,
+        obs: np.ndarray,
+        act: np.ndarray,
+        next_obs: np.ndarray,
+        rew: np.ndarray,
+        done: np.ndarray,
+        log_p: np.ndarray,
+        state_value: np.ndarray,
+    ):
+        self.data.obs[self.count] = obs
+        self.data.act[self.count] = act
+        self.data.next_obs[self.count] = next_obs
+        self.data.rew[self.count] = rew
+        self.data.done[self.count] = done
+        self.data.log_pi[self.count] = log_p
+        self.data.state_value[self.count] = state_value
+        self.count += 1
+        if self.count >= self.buffer_size:
+            self.count = 0
+
+    def get(self, last_state_value: np.ndarray) -> BufferData:
+        self._finish_path(last_state_value)
+        batch_data = BufferData(device=self.data.device)
+
+    def _finish_path(self, last_state_value: np.ndarray) -> None:
+        pass

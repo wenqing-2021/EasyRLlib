@@ -15,10 +15,10 @@ class DQN(BaseAgent):
     def __init__(
         self,
         observation_space: gym.Space = None,
-        action_space: Discrete = None,
+        action_space: gym.Space = None,
         configure: RunConfig = None,
     ) -> None:
-        super().__init__(observation_space, action_space)
+        super().__init__(observation_space, action_space, configure.device)
         if not isinstance(action_space, Discrete):
             raise ValueError("ONLY Discrete action space is supported")
 
