@@ -54,11 +54,21 @@ class DQNConfig(BaseConfig):
 
 
 @dataclass
+class PPOConfig(BaseConfig):
+    policy_lr: float = 1e-3
+    value_lr: float = 1e-3
+    hidden_sizes: list = field(default_factory=lambda: [64, 64])
+    gamma: float = 0.99
+    lam: float = 0.95
+    target_kl: float = 0.01
+
+
+@dataclass
 class RunConfig(BaseConfig):
     env_config: EnvConfig = None
     train_config: TrainConfig = None
     agent_config: BaseConfig = None
-
+    device: str = "cpu"
     agent_config_path: str = None
     agent_name: str = None
     save_path: str = None
