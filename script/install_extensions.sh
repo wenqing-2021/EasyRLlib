@@ -60,7 +60,7 @@ has_pkg "$pip_list" 'gymnasium'
 has_gymnasium=$?
 if [[ $has_gymnasium == 0 ]]; then
     echo "start installing gymnasium"
-    pip3 install gymnasium==23.12.1
+    pip3 install gymnasium
 else
     echo "has installed gymnasium"
 fi
@@ -75,8 +75,10 @@ else
 fi
 
 # install MPI
-mpicc_path=$(which mpicc)
-if [[ $mpicc_path == "" ]]; then
+pip_list=$(pip3 list)
+has_pkg "$pip_list" 'mpi4py'
+has_mpi4py=$?
+if [[ $has_mpi4py == 0 ]]; then
     echo "start installing mpi4py"
     apt-get install -y libopenmpi-dev
     pip3 install mpi4py
