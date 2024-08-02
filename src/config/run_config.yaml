@@ -9,8 +9,15 @@ train_config:
   num_envs: 4
   batch_size: 32
   buffer_size: 256
-  update_every: 25
-  random_explor_steps: 20000
+
+  off_policy_train_config:
+    update_every: 25
+    random_explor_steps: 20000
+    soft_update_every: 100
+  
+  on_policy_train_config:
+    update_times: 80
+
 
 agent_config_path: "src/config/agent_config/dqn.yaml"
 agent_name: "DQN"

@@ -4,6 +4,7 @@ from typing import Union
 import torch
 import numpy as np
 import gymnasium as gym
+import scipy
 
 
 @dataclass
@@ -139,15 +140,23 @@ class OnPolicyBuffer(BaseBuffer):
         super().__init__(buffer_size, batch_size, device)
         self.obs_shape = obs_shape
         self.act_shape = act_shape
-        self.count = 0
+        self.count, self.path_start_idx = 0, 0
         self._initialize(obs_shape, act_shape)
 
     def _initialize(self, obs_shape=None, act_shape=None):
         super()._initialize(obs_shape, act_shape)
-        log_pi = np.zeros((self.buffer_size, 1), dtype=np.float32)
-        state_value = np.zeros((self.buffer_size, 1), dtype=np.float32)
-        self.data.__setattr__("log_pi", log_pi)
-        self.data.__setattr__("state_value", state_value)
+        self.data.__setattr__(
+            "log_pi", np.zeros((self.buffer_size, 1), dtype=np.float32)
+        )
+        self.data.__setattr__(
+            "state_v", np.zeros((self.buffer_size, 1), dtype=np.float32)
+        )
+        self.data.__setattr__(
+            "gae_adv", np.zeros((self.buffer_size, 1), dtype=np.float32)
+        )
+        self.data.__setattr__(
+            "discount_ret", np.zeros((self.buffer_size, 1), dtype=np.float32)
+        )
 
     def clear(self):
         self._initialize(self.obs_shape, self.act_shape)
@@ -160,7 +169,7 @@ class OnPolicyBuffer(BaseBuffer):
         rew: np.ndarray,
         done: np.ndarray,
         log_p: np.ndarray,
-        state_value: np.ndarray,
+        state_v: np.ndarray,
     ):
         self.data.obs[self.count] = obs
         self.data.act[self.count] = act
@@ -168,14 +177,51 @@ class OnPolicyBuffer(BaseBuffer):
         self.data.rew[self.count] = rew
         self.data.done[self.count] = done
         self.data.log_pi[self.count] = log_p
-        self.data.state_value[self.count] = state_value
+        self.data.state_v[self.count] = state_v
         self.count += 1
         if self.count >= self.buffer_size:
             self.count = 0
 
-    def get(self, last_state_value: np.ndarray) -> BufferData:
-        self._finish_path(last_state_value)
+    @staticmethod
+    def discount_cumsum(x, discount):
+        """
+        magic from rllab for computing discounted cumulative sums of vectors.
+
+        input:
+            vector x,
+            [x0,
+            x1,
+            x2]
+
+        output:
+            [x0 + discount * x1 + discount^2 * x2,
+            x1 + discount * x2,
+            x2]
+        """
+        return scipy.signal.lfilter([1], [1, float(-discount)], x[::-1], axis=0)[::-1]
+
+    def get(self) -> BufferData:
         batch_data = BufferData(device=self.data.device)
 
-    def _finish_path(self, last_state_value: np.ndarray) -> None:
-        pass
+    def finish_path(
+        self,
+        last_state_v: np.ndarray = None,
+        gamma: float = 0.99,
+        lam: float = 0.95,
+    ) -> None:
+        # run this function when episode ends to compute advantage and returns
+        path_slice = slice(self.path_start_idx, self.count)
+        rews = np.append(self.data.rew[path_slice], last_state_v)
+        vals = np.append(self.data.state_v[path_slice], last_state_v)
+
+        # the next two lines implement GAE-Lambda advantage calculation
+        deltas = rews[:-1] + gamma * vals[1:] - vals[:-1]
+        self.data.gae_adv[path_slice] = OnPolicyBuffer.discount_cumsum(
+            deltas, gamma * lam
+        )
+
+        self.data.discount_ret[path_slice] = OnPolicyBuffer.discount_cumsum(
+            rews, gamma
+        )[:-1]
+
+        self.path_start_idx = self.count
