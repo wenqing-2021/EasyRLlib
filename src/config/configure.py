@@ -16,7 +16,6 @@ class BaseConfig:
         data_keys = data.keys()
         for key in data_keys:
             value = data[key]
-            # TODO: support create not defined baseconfig from dict
             if isinstance(value, dict) and issubclass(instance_map[key], BaseConfig):
                 setattr(instance, key, instance_map[key].from_dict(value))
             else:
@@ -31,6 +30,18 @@ class EnvConfig(BaseConfig):
 
 
 @dataclass
+class OffPolicyTrainConfig(BaseConfig):
+    update_every: int = 100  # off-policy update every n steps
+    random_explor_steps: int = 1e4  # off-policy random explore steps
+    soft_update_every: int = 100  # soft update target network every n steps
+
+
+@dataclass
+class OnPolicyTrainConfig(BaseConfig):
+    update_times: int = 100
+
+
+@dataclass
 class TrainConfig(BaseConfig):
     seed: int = 1
     epochs: int = 100
@@ -38,27 +49,29 @@ class TrainConfig(BaseConfig):
     num_envs: int = 4
     batch_size: int = 64
     buffer_size: int = 1e5
-    update_every: int = 100  # off-policy update every n steps
-    random_explor_steps: int = 1e4  # off-policy random explore steps
-    soft_update_every: int = 100  # soft update target network every n steps
+    off_policy_train_config: OffPolicyTrainConfig = None
+    on_policy_train_config: OnPolicyTrainConfig = None
 
 
 @dataclass
-class DQNConfig(BaseConfig):
-    q_lr: float = 1e-3
+class AgentConfig(BaseConfig):
     hidden_sizes: list = field(default_factory=lambda: [64, 64])
     gamma: float = 0.99
-    epsilon: float = 0.1  # epsilon greedy exploration
     activation_name: str = "Tanh"
+    activation: nn.Module = None
+
+
+@dataclass
+class DQNConfig(AgentConfig):
+    q_lr: float = 1e-3
+    epsilon: float = 0.1  # epsilon greedy exploration
     tau: float = 0.005
 
 
 @dataclass
-class PPOConfig(BaseConfig):
+class PPOConfig(AgentConfig):
     policy_lr: float = 1e-3
     value_lr: float = 1e-3
-    hidden_sizes: list = field(default_factory=lambda: [64, 64])
-    gamma: float = 0.99
     lam: float = 0.95
     target_kl: float = 0.01
 
@@ -67,7 +80,7 @@ class PPOConfig(BaseConfig):
 class RunConfig(BaseConfig):
     env_config: EnvConfig = None
     train_config: TrainConfig = None
-    agent_config: BaseConfig = None
+    agent_config: AgentConfig = None
     device: str = "cpu"
     agent_config_path: str = None
     agent_name: str = None
@@ -117,3 +130,4 @@ def load_config(config_path: str = None) -> RunConfig:
 if __name__ == "__main__":
     run_config = load_config()
     print(run_config.agent_config.activation)
+    print(run_config)

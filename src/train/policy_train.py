@@ -13,7 +13,7 @@ from utils.mpi_tools import (
     num_procs,
 )
 from common.base_agent import BaseAgent
-from common.buffer import OffPolicyBuffer
+from common.buffer import OffPolicyBuffer, OnPolicyBuffer
 from common.networks import count_vars
 
 
@@ -50,6 +50,20 @@ class BaseTrainer(ABC):
             raise ValueError("The defined Action Space not supported")
 
         return act_dim
+
+    def _log_agent_param(self, agent) -> None:
+        # Setup agent and count vars
+        self.logger.setup_pytorch_saver(agent)
+        sync_params(agent)
+        var_counts = count_vars(agent)
+        self.logger.log("\nNumber of the model parameters: %d\n" % var_counts)
+
+    def _set_random_seed(self) -> int:
+        seed = self.configure.train_config.seed + 10000 * proc_id()
+        torch.manual_seed(seed)
+        np.random.seed(seed)
+
+        return seed
 
 
 class OffPolicyTrain(BaseTrainer):
@@ -96,11 +110,7 @@ class OffPolicyTrain(BaseTrainer):
                 ep_steps += 1
 
     def train(self, agent) -> None:
-        # Setup agent and count vars
-        self.logger.setup_pytorch_saver(agent)
-        sync_params(agent)
-        var_counts = count_vars(agent)
-        self.logger.log("\nNumber of the model parameters: %d\n" % var_counts)
+        self._log_agent_param(agent)
 
         # Setup buffer
         # act_dim = self._get_act_dim()
@@ -113,9 +123,7 @@ class OffPolicyTrain(BaseTrainer):
         )
 
         # Random Seed
-        seed = self.configure.train_config.seed + 10000 * proc_id()
-        torch.manual_seed(seed)
-        np.random.seed(seed)
+        seed = self._set_random_seed()
 
         # Reset the environment
         obs, _ = self.env.reset()
@@ -138,4 +146,58 @@ class OffPolicyTrain(BaseTrainer):
 
 
 class OnPolicyTrain(BaseTrainer):
-    pass
+    def __init__(self, configure: RunConfig = None, env: gym.Env = None) -> None:
+        super().__init__(configure, env)
+
+    def train(self, agent: BaseAgent = None) -> None:
+        self._log_agent_param(agent)
+
+        # Setup buffer
+        # act_dim = self._get_act_dim()
+        buffer = OnPolicyBuffer(
+            buffer_size=self.configure.train_config.buffer_size,
+            batch_size=self.configure.train_config.batch_size,
+            obs_shape=self.env.observation_space.shape,
+            act_shape=self.env.action_space.shape,
+            device=agent.device,
+        )
+
+        # Random Seed
+        seed = self._set_random_seed()
+
+        # Reset the environment
+        obs, _ = self.env.reset()
+        local_epochs = int(self.configure.train_config.epochs / num_procs())
+        local_steps_per_epoch = int(
+            self.configure.train_config.total_steps
+            / self.configure.train_config.epochs
+            / num_procs()
+        )
+
+        # Main loop: collect rollout episode in env and update agent with on-policy
+        self.logger.log("Start to train the model!\n", color="green")
+        for epoch in range(local_epochs):
+            ep_rew, ep_steps = 0, 0
+            obs, ep_ret, ep_len = self.env.reset(seed=seed), 0, 0
+            for steps in range(local_steps_per_epoch):
+                act, log_pi = agent.act(obs)
+                next_obs, rew, done, _, info = self.env.step(act)
+                buffer.store(obs, act, next_obs, rew, done, log_pi)
+                obs = next_obs
+                ep_rew += rew
+                ep_steps += 1
+                ep_ret += rew
+                ep_len += 1
+
+                if done or (steps + 1) == local_steps_per_epoch:
+                    buffer.finish_path(last_val=0)
+                    self.logger.store(EpRet=ep_ret, EpLen=ep_len)
+                    obs, ep_ret, ep_len = self.env.reset(seed=seed), 0, 0
+
+            agent.learn(buffer.get())
+
+            # store the nessarry information
+            self.logger.log_tabular("Epoch", epoch)
+            self.logger.log_tabular("EpRet", with_min_and_max=True)
+            self.logger.log_tabular("EpLen", average_only=True)
+            self.logger.dump_tabular()

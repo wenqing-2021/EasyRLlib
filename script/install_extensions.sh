@@ -11,6 +11,17 @@ function has_pkg(){
     return $find_pkg
 }
 
+function export_text(){
+    # 检查 ~/.zshrc 文件中是否已经存在
+    if ! grep -q "$1" ~/.zshrc; then
+        # 如果不存在，追加到文件末尾
+        echo "$1" >> ~/.zshrc
+        echo "Text '$1' has been appended to ~/.zshrc"
+    else
+        echo "Text '$1' already exists in ~/.zshrc"
+    fi
+}
+
 # install zsh
 all_shells=$(cat /etc/shells)
 has_pkg "${all_shells[@]}" '/bin/zsh'
@@ -80,12 +91,15 @@ has_pkg "$pip_list" 'mpi4py'
 has_mpi4py=$?
 if [[ $has_mpi4py == 0 ]]; then
     echo "start installing mpi4py"
-    apt-get install -y libopenmpi-dev
+    apt-get install -y libopenmpi-dev libopenblas-base
     pip3 install mpi4py
     echo "has installed mpi4py"
 else
     echo "has installed mpi4py"
 fi
+export_text "export OMPI_ALLOW_RUN_AS_ROOT=1"
+export_text "export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1"
+source ~/.zshrc
 
 # install vscode extensions
 plugins=(
