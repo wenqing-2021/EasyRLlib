@@ -14,7 +14,7 @@ from abc import ABC, abstractmethod
 import gymnasium as gym
 from gymnasium.spaces import Box, Discrete
 from common.buffer import BufferData
-from typing import List
+from typing import List, Union, Tuple
 
 
 class BaseAgent(ABC, nn.Module):
@@ -41,7 +41,7 @@ class BaseAgent(ABC, nn.Module):
             self.device = torch.device(device)
 
     @abstractmethod
-    def act(self, obs, act) -> np.ndarray:
+    def act(self, obs, act) -> Tuple[np.ndarray]:
         """
         description: get the action from the actor network
         return {*}
@@ -76,3 +76,25 @@ class BaseAgent(ABC, nn.Module):
         for target_net, current_net in zip(self.target_net_list, self.current_net_list):
             for tar, cur in zip(target_net.parameters(), current_net.parameters()):
                 tar.data.copy_(cur.data * self.tau + tar.data * (1.0 - self.tau))
+
+
+class OffPolicyAgent(BaseAgent):
+    def __init__(
+        self, observation_space: gym.Space, action_space: gym.Space, device: str = None
+    ) -> None:
+        super().__init__(observation_space, action_space, device)
+
+
+class OnPolicyAgent(BaseAgent):
+    def __init__(
+        self, observation_space: gym.Space, action_space: gym.Space, device: str = None
+    ) -> None:
+        super().__init__(observation_space, action_space, device)
+
+    @abstractmethod
+    def calc_state_value(self, obs) -> np.ndarray:
+        """
+        description: calculate the state value
+        return {*}
+        """
+        pass

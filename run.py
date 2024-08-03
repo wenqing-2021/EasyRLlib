@@ -1,12 +1,10 @@
-from policy_train import OffPolicyTrain
+from train.policy_train import BaseTrainer
 from config.configure import RunConfig, load_config
 from utils.mpi_tools import mpi_fork
-import agent as agent
+import agent_lib
 import torch
 import argparse
 import gymnasium as gym
-
-AGENT_MAP = {"DQN": agent.DQN}
 
 
 def update_run_config(args, run_config: RunConfig):
@@ -28,23 +26,23 @@ def make_env(env_name: str):
 def make_agent(
     agent_name: str = None, env: gym.Env = None, run_config: RunConfig = None
 ):
-    try:
-        agent = AGENT_MAP[agent_name](
-            env.observation_space, env.action_space, run_config
-        )
-    except KeyError:
+    if agent_name not in agent_lib.AGENT_MAP.keys():
         raise ValueError(
-            f"The defined Agent not supported. Please load agent from {list(AGENT_MAP.keys())} "
+            f"The defined Agent not supported. Please load agent from {list(agent_lib.AGENT_MAP.keys())} "
         )
 
-    return agent
+    agent = agent_lib.AGENT_MAP[agent_name](
+        env.observation_space, env.action_space, run_config
+    )
+    trainer: BaseTrainer = agent_lib.TRAINER_TYPE[agent_name](run_config, env)
+
+    return agent, trainer
 
 
 # main function
 def main(run_config: RunConfig):
     env = make_env(run_config.env_config.env_name)
-    agent = make_agent(run_config.agent_name, env, run_config)
-    trainer = OffPolicyTrain(run_config, env)
+    agent, trainer = make_agent(run_config.agent_name, env, run_config)
     trainer.train(agent)
 
 

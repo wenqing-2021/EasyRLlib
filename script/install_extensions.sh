@@ -92,6 +92,7 @@ has_mpi4py=$?
 if [[ $has_mpi4py == 0 ]]; then
     echo "start installing mpi4py"
     apt-get install -y libopenmpi-dev libopenblas-base
+    apt purge hwloc-nox libhwloc-dev libhwloc-plugins
     pip3 install mpi4py
     echo "has installed mpi4py"
 else

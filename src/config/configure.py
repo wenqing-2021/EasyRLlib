@@ -39,6 +39,7 @@ class OffPolicyTrainConfig(BaseConfig):
 @dataclass
 class OnPolicyTrainConfig(BaseConfig):
     update_times: int = 100
+    max_ep_len: int = 1000
 
 
 @dataclass
