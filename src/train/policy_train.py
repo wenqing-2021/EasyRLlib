@@ -12,7 +12,7 @@ from utils.mpi_tools import (
     mpi_statistics_scalar,
     num_procs,
 )
-from common.base_agent import BaseAgent
+from common.base_agent import OnPolicyAgent, OffPolicyAgent, BaseAgent
 from common.buffer import OffPolicyBuffer, OnPolicyBuffer
 from common.networks import count_vars
 
@@ -87,7 +87,7 @@ class OffPolicyTrain(BaseTrainer):
                 obs = next_obs
 
     def _agent_explore_learn(
-        self, buffer: OffPolicyBuffer = None, agent: BaseAgent = None
+        self, buffer: OffPolicyBuffer = None, agent: OffPolicyAgent = None
     ) -> None:
         obs, _ = self.env.reset()
         ep_rew, ep_steps = 0, 0
@@ -149,7 +149,7 @@ class OnPolicyTrain(BaseTrainer):
     def __init__(self, configure: RunConfig = None, env: gym.Env = None) -> None:
         super().__init__(configure, env)
 
-    def train(self, agent: BaseAgent = None) -> None:
+    def train(self, agent: OnPolicyAgent = None) -> None:
         self._log_agent_param(agent)
 
         # Setup buffer
@@ -181,8 +181,9 @@ class OnPolicyTrain(BaseTrainer):
             obs, ep_ret, ep_len = self.env.reset(seed=seed), 0, 0
             for steps in range(local_steps_per_epoch):
                 act, log_pi = agent.act(obs)
+                state_v = agent.calc_state_value(obs)
                 next_obs, rew, done, _, info = self.env.step(act)
-                buffer.store(obs, act, next_obs, rew, done, log_pi)
+                buffer.store(obs, act, next_obs, rew, done, log_pi, state_v)
                 obs = next_obs
                 ep_rew += rew
                 ep_steps += 1

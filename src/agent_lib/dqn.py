@@ -1,5 +1,5 @@
 from common.networks import QNet
-from common.base_agent import BaseAgent
+from common.base_agent import OffPolicyAgent
 from common.buffer import BufferData
 from config.configure import RunConfig
 from utils.mpi_pytorch import mpi_avg_grads
@@ -11,7 +11,7 @@ import torch
 import copy
 
 
-class DQN(BaseAgent):
+class DQN(OffPolicyAgent):
     def __init__(
         self,
         observation_space: gym.Space = None,
