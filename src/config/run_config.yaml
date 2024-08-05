@@ -20,8 +20,7 @@ train_config:
     max_ep_len: 1000
 
 
-agent_config_path: "src/config/agent_config/dqn.yaml"
-agent_name: "DQN"
+agent_config_path: "src/config/agent_config/ppo.yaml"
 exp_name: "DQN"
 save_path: "output/"
 device: "cpu"

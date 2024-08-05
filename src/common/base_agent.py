@@ -14,12 +14,17 @@ from abc import ABC, abstractmethod
 import gymnasium as gym
 from gymnasium.spaces import Box, Discrete
 from common.buffer import BufferData
+from utils.logx import EpochLogger
 from typing import List, Union, Tuple
 
 
 class BaseAgent(ABC, nn.Module):
     def __init__(
-        self, observation_space: gym.Space, action_space: gym.Space, device: str = None
+        self,
+        observation_space: gym.Space,
+        action_space: gym.Space,
+        device: str = None,
+        logger: EpochLogger = None,
     ) -> None:
         """
         description:
@@ -35,6 +40,7 @@ class BaseAgent(ABC, nn.Module):
         self.tau: float = None
         self.target_net_list: List[nn.Module] = []
         self.current_net_list: List[nn.Module] = []
+        self.logger = logger
         if device is None:
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         else:
@@ -49,7 +55,7 @@ class BaseAgent(ABC, nn.Module):
         pass
 
     @abstractmethod
-    def learn(self, batch_data: BufferData, **kwargs):
+    def learn(self, batch_data: BufferData) -> None:
         """
         description: update the network using the batch data
         return {*}
