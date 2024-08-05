@@ -64,7 +64,8 @@ class DQN(OffPolicyAgent):
             target_q = batch_data.rew + self.gamma * (1 - batch_data.done) * next_q
 
         q = self.policy.forward(obs).gather(dim=-1, index=act.long().unsqueeze(1))
-        loss = nn.functional.mse_loss(q, target_q)
+        loss = nn.functional.mse_loss(q, target_q).mean()
+        self.logger.store(Loss=loss.cpu().item())
 
         self.policy_optimizer.zero_grad()
         loss.backward()

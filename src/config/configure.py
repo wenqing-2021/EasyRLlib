@@ -56,6 +56,7 @@ class TrainConfig(BaseConfig):
 
 @dataclass
 class AgentConfig(BaseConfig):
+    agent_name: str = None
     hidden_sizes: list = field(default_factory=lambda: [64, 64])
     gamma: float = 0.99
     activation_name: str = "Tanh"
@@ -75,6 +76,7 @@ class PPOConfig(AgentConfig):
     value_lr: float = 1e-3
     lam: float = 0.95
     target_kl: float = 0.01
+    clip_ratio: float = 0.2
 
 
 @dataclass
@@ -84,12 +86,11 @@ class RunConfig(BaseConfig):
     agent_config: AgentConfig = None
     device: str = "cpu"
     agent_config_path: str = None
-    agent_name: str = None
     save_path: str = None
     exp_name: str = None
 
 
-AGENT_MAP = {"DQN": DQNConfig}
+AGENT_MAP = {"DQN": DQNConfig, "PPO": PPOConfig}
 
 ACTIVATION_MAP = {
     "Tanh": nn.Tanh,
@@ -107,7 +108,7 @@ def load_config(config_path: str = None) -> RunConfig:
         config_dict: dict = yaml.safe_load(f)
         agent_yaml = open(config_dict["agent_config_path"], "r")
         agent_config_dict = yaml.safe_load(agent_yaml)
-        agent_name = config_dict["agent_name"]
+        agent_name = agent_config_dict["agent_name"]
         try:
             agent_config = AGENT_MAP[agent_name].from_dict(agent_config_dict)
         except KeyError:
