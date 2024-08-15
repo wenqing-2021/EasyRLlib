@@ -48,5 +48,5 @@ def sync_params(module):
     if num_procs() == 1:
         return
     for p in module.parameters():
-        p_numpy = p.data.numpy()
+        p_numpy = p.data.cpu().numpy()
         broadcast(p_numpy)

@@ -1,8 +1,9 @@
-from common.networks import QNet
-from common.base_agent import OffPolicyAgent
-from common.buffer import BufferData
-from config.configure import RunConfig
-from utils.mpi_pytorch import mpi_avg_grads
+from src.common.networks import QNet
+from src.common.base_agent import OffPolicyAgent
+from src.common.buffer import BufferData
+from src.config.configure import RunConfig
+from src.utils.mpi_pytorch import mpi_avg_grads
+from src.utils.logx import EpochLogger
 import numpy as np
 import gymnasium as gym
 from gymnasium.spaces import Box, Discrete
@@ -17,8 +18,9 @@ class DQN(OffPolicyAgent):
         observation_space: gym.Space = None,
         action_space: gym.Space = None,
         configure: RunConfig = None,
+        logger: EpochLogger = None,
     ) -> None:
-        super().__init__(observation_space, action_space, configure.device)
+        super().__init__(observation_space, action_space, configure.device, logger)
         if not isinstance(action_space, Discrete):
             raise ValueError("ONLY Discrete action space is supported")
 

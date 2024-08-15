@@ -1,0 +1,344 @@
+{
+    "configure":	{
+        "RunConfig(env_config=EnvConfig(env_name='CartPole-v1'), train_config=TrainConfig(seed=1, epochs=25, total_steps=20000, num_envs=1, batch_size=64, buffer_size=256, off_policy_train_config=OffPolicyTrainConfig(update_every=10, random_explor_steps=1000, soft_update_every=50), on_policy_train_config=OnPolicyTrainConfig(update_times=80, max_ep_len=1000)), agent_config=DQNConfig(agent_name='DQN', hidden_sizes=[64, 64], gamma=0.99, activation_name='Tanh', activation=<class 'torch.nn.modules.activation.Tanh'>, q_lr=0.001, epsilon=0.1, tau=0.005), device='cuda', agent_config_path='src/config/agent_config/dqn.yaml', save_path='output/', exp_name='DQN_test')":	{
+            "agent_config":	{
+                "DQNConfig(agent_name='DQN', hidden_sizes=[64, 64], gamma=0.99, activation_name='Tanh', activation=<class 'torch.nn.modules.activation.Tanh'>, q_lr=0.001, epsilon=0.1, tau=0.005)":	{
+                    "activation":	"Tanh",
+                    "activation_name":	"Tanh",
+                    "agent_name":	"DQN",
+                    "epsilon":	0.1,
+                    "gamma":	0.99,
+                    "hidden_sizes":	[
+                        64,
+                        64
+                    ],
+                    "q_lr":	0.001,
+                    "tau":	0.005
+                }
+            },
+            "agent_config_path":	"src/config/agent_config/dqn.yaml",
+            "device":	"cuda",
+            "env_config":	{
+                "EnvConfig(env_name='CartPole-v1')":	{
+                    "env_name":	"CartPole-v1"
+                }
+            },
+            "exp_name":	"DQN_test",
+            "save_path":	"output/",
+            "train_config":	{
+                "TrainConfig(seed=1, epochs=25, total_steps=20000, num_envs=1, batch_size=64, buffer_size=256, off_policy_train_config=OffPolicyTrainConfig(update_every=10, random_explor_steps=1000, soft_update_every=50), on_policy_train_config=OnPolicyTrainConfig(update_times=80, max_ep_len=1000))":	{
+                    "batch_size":	64,
+                    "buffer_size":	256,
+                    "epochs":	25,
+                    "num_envs":	1,
+                    "off_policy_train_config":	{
+                        "OffPolicyTrainConfig(update_every=10, random_explor_steps=1000, soft_update_every=50)":	{
+                            "random_explor_steps":	1000,
+                            "soft_update_every":	50,
+                            "update_every":	10
+                        }
+                    },
+                    "on_policy_train_config":	{
+                        "OnPolicyTrainConfig(update_times=80, max_ep_len=1000)":	{
+                            "max_ep_len":	1000,
+                            "update_times":	80
+                        }
+                    },
+                    "seed":	1,
+                    "total_steps":	20000
+                }
+            }
+        }
+    },
+    "env":	{
+        "<TimeLimit<OrderEnforcing<PassiveEnvChecker<CartPoleEnv<CartPole-v1>>>>>":	{
+            "_action_space":	null,
+            "_cached_spec":	null,
+            "_elapsed_steps":	null,
+            "_max_episode_steps":	500,
+            "_metadata":	null,
+            "_observation_space":	null,
+            "_reward_range":	null,
+            "_saved_kwargs":	{
+                "max_episode_steps":	500
+            },
+            "env":	{
+                "<OrderEnforcing<PassiveEnvChecker<CartPoleEnv<CartPole-v1>>>>":	{
+                    "_action_space":	null,
+                    "_cached_spec":	null,
+                    "_disable_render_order_enforcing":	false,
+                    "_has_reset":	false,
+                    "_metadata":	null,
+                    "_observation_space":	null,
+                    "_reward_range":	null,
+                    "_saved_kwargs":	{
+                        "disable_render_order_enforcing":	false
+                    },
+                    "env":	{
+                        "<PassiveEnvChecker<CartPoleEnv<CartPole-v1>>>":	{
+                            "_action_space":	null,
+                            "_cached_spec":	null,
+                            "_metadata":	null,
+                            "_observation_space":	null,
+                            "_reward_range":	null,
+                            "_saved_kwargs":	{},
+                            "checked_render":	false,
+                            "checked_reset":	false,
+                            "checked_step":	false,
+                            "close_called":	false,
+                            "env":	{
+                                "<CartPoleEnv<CartPole-v1>>":	{
+                                    "action_space":	{
+                                        "Discrete(2)":	{
+                                            "_np_random":	null,
+                                            "_shape":	[],
+                                            "dtype":	"int64",
+                                            "n":	"2",
+                                            "start":	"0"
+                                        }
+                                    },
+                                    "clock":	null,
+                                    "force_mag":	10.0,
+                                    "gravity":	9.8,
+                                    "isopen":	true,
+                                    "kinematics_integrator":	"euler",
+                                    "length":	0.5,
+                                    "masscart":	1.0,
+                                    "masspole":	0.1,
+                                    "observation_space":	{
+                                        "Box([-4.8000002e+00 -3.4028235e+38 -4.1887903e-01 -3.4028235e+38], [4.8000002e+00 3.4028235e+38 4.1887903e-01 3.4028235e+38], (4,), float32)":	{
+                                            "_np_random":	null,
+                                            "_shape":	[
+                                                4
+                                            ],
+                                            "bounded_above":	"[ True  True  True  True]",
+                                            "bounded_below":	"[ True  True  True  True]",
+                                            "dtype":	"float32",
+                                            "high":	"[4.8000002e+00 3.4028235e+38 4.1887903e-01 3.4028235e+38]",
+                                            "high_repr":	"[4.8000002e+00 3.4028235e+38 4.1887903e-01 3.4028235e+38]",
+                                            "low":	"[-4.8000002e+00 -3.4028235e+38 -4.1887903e-01 -3.4028235e+38]",
+                                            "low_repr":	"[-4.8000002e+00 -3.4028235e+38 -4.1887903e-01 -3.4028235e+38]"
+                                        }
+                                    },
+                                    "polemass_length":	0.05,
+                                    "render_mode":	null,
+                                    "screen":	null,
+                                    "screen_height":	400,
+                                    "screen_width":	600,
+                                    "spec":	{
+                                        "EnvSpec(id='CartPole-v1', entry_point='gymnasium.envs.classic_control.cartpole:CartPoleEnv', reward_threshold=475.0, nondeterministic=False, max_episode_steps=None, order_enforce=False, autoreset=False, disable_env_checker=True, apply_api_compatibility=False, kwargs={}, namespace=None, name='CartPole', version=1, additional_wrappers=(), vector_entry_point='gymnasium.envs.classic_control.cartpole:CartPoleVectorEnv')":	{
+                                            "additional_wrappers":	[],
+                                            "apply_api_compatibility":	false,
+                                            "autoreset":	false,
+                                            "disable_env_checker":	true,
+                                            "entry_point":	"gymnasium.envs.classic_control.cartpole:CartPoleEnv",
+                                            "id":	"CartPole-v1",
+                                            "kwargs":	{},
+                                            "max_episode_steps":	null,
+                                            "name":	"CartPole",
+                                            "namespace":	null,
+                                            "nondeterministic":	false,
+                                            "order_enforce":	false,
+                                            "reward_threshold":	475.0,
+                                            "vector_entry_point":	"gymnasium.envs.classic_control.cartpole:CartPoleVectorEnv",
+                                            "version":	1
+                                        }
+                                    },
+                                    "state":	null,
+                                    "steps_beyond_terminated":	null,
+                                    "tau":	0.02,
+                                    "theta_threshold_radians":	0.20943951023931953,
+                                    "total_mass":	1.1,
+                                    "x_threshold":	2.4
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "exp_name":	"DQN_test",
+    "logger_kwargs":	{
+        "exp_name":	"DQN_test",
+        "output_dir":	"output/DQN_test/DQN_test_s1"
+    },
+    "self":	{
+        "<src.train.policy_train.OffPolicyTrain object at 0x7f2a1ecc8400>":	{
+            "configure":	{
+                "RunConfig(env_config=EnvConfig(env_name='CartPole-v1'), train_config=TrainConfig(seed=1, epochs=25, total_steps=20000, num_envs=1, batch_size=64, buffer_size=256, off_policy_train_config=OffPolicyTrainConfig(update_every=10, random_explor_steps=1000, soft_update_every=50), on_policy_train_config=OnPolicyTrainConfig(update_times=80, max_ep_len=1000)), agent_config=DQNConfig(agent_name='DQN', hidden_sizes=[64, 64], gamma=0.99, activation_name='Tanh', activation=<class 'torch.nn.modules.activation.Tanh'>, q_lr=0.001, epsilon=0.1, tau=0.005), device='cuda', agent_config_path='src/config/agent_config/dqn.yaml', save_path='output/', exp_name='DQN_test')":	{
+                    "agent_config":	{
+                        "DQNConfig(agent_name='DQN', hidden_sizes=[64, 64], gamma=0.99, activation_name='Tanh', activation=<class 'torch.nn.modules.activation.Tanh'>, q_lr=0.001, epsilon=0.1, tau=0.005)":	{
+                            "activation":	"Tanh",
+                            "activation_name":	"Tanh",
+                            "agent_name":	"DQN",
+                            "epsilon":	0.1,
+                            "gamma":	0.99,
+                            "hidden_sizes":	[
+                                64,
+                                64
+                            ],
+                            "q_lr":	0.001,
+                            "tau":	0.005
+                        }
+                    },
+                    "agent_config_path":	"src/config/agent_config/dqn.yaml",
+                    "device":	"cuda",
+                    "env_config":	{
+                        "EnvConfig(env_name='CartPole-v1')":	{
+                            "env_name":	"CartPole-v1"
+                        }
+                    },
+                    "exp_name":	"DQN_test",
+                    "save_path":	"output/",
+                    "train_config":	{
+                        "TrainConfig(seed=1, epochs=25, total_steps=20000, num_envs=1, batch_size=64, buffer_size=256, off_policy_train_config=OffPolicyTrainConfig(update_every=10, random_explor_steps=1000, soft_update_every=50), on_policy_train_config=OnPolicyTrainConfig(update_times=80, max_ep_len=1000))":	{
+                            "batch_size":	64,
+                            "buffer_size":	256,
+                            "epochs":	25,
+                            "num_envs":	1,
+                            "off_policy_train_config":	{
+                                "OffPolicyTrainConfig(update_every=10, random_explor_steps=1000, soft_update_every=50)":	{
+                                    "random_explor_steps":	1000,
+                                    "soft_update_every":	50,
+                                    "update_every":	10
+                                }
+                            },
+                            "on_policy_train_config":	{
+                                "OnPolicyTrainConfig(update_times=80, max_ep_len=1000)":	{
+                                    "max_ep_len":	1000,
+                                    "update_times":	80
+                                }
+                            },
+                            "seed":	1,
+                            "total_steps":	20000
+                        }
+                    }
+                }
+            },
+            "env":	{
+                "<TimeLimit<OrderEnforcing<PassiveEnvChecker<CartPoleEnv<CartPole-v1>>>>>":	{
+                    "_action_space":	null,
+                    "_cached_spec":	null,
+                    "_elapsed_steps":	null,
+                    "_max_episode_steps":	500,
+                    "_metadata":	null,
+                    "_observation_space":	null,
+                    "_reward_range":	null,
+                    "_saved_kwargs":	{
+                        "max_episode_steps":	500
+                    },
+                    "env":	{
+                        "<OrderEnforcing<PassiveEnvChecker<CartPoleEnv<CartPole-v1>>>>":	{
+                            "_action_space":	null,
+                            "_cached_spec":	null,
+                            "_disable_render_order_enforcing":	false,
+                            "_has_reset":	false,
+                            "_metadata":	null,
+                            "_observation_space":	null,
+                            "_reward_range":	null,
+                            "_saved_kwargs":	{
+                                "disable_render_order_enforcing":	false
+                            },
+                            "env":	{
+                                "<PassiveEnvChecker<CartPoleEnv<CartPole-v1>>>":	{
+                                    "_action_space":	null,
+                                    "_cached_spec":	null,
+                                    "_metadata":	null,
+                                    "_observation_space":	null,
+                                    "_reward_range":	null,
+                                    "_saved_kwargs":	{},
+                                    "checked_render":	false,
+                                    "checked_reset":	false,
+                                    "checked_step":	false,
+                                    "close_called":	false,
+                                    "env":	{
+                                        "<CartPoleEnv<CartPole-v1>>":	{
+                                            "action_space":	{
+                                                "Discrete(2)":	{
+                                                    "_np_random":	null,
+                                                    "_shape":	[],
+                                                    "dtype":	"int64",
+                                                    "n":	"2",
+                                                    "start":	"0"
+                                                }
+                                            },
+                                            "clock":	null,
+                                            "force_mag":	10.0,
+                                            "gravity":	9.8,
+                                            "isopen":	true,
+                                            "kinematics_integrator":	"euler",
+                                            "length":	0.5,
+                                            "masscart":	1.0,
+                                            "masspole":	0.1,
+                                            "observation_space":	{
+                                                "Box([-4.8000002e+00 -3.4028235e+38 -4.1887903e-01 -3.4028235e+38], [4.8000002e+00 3.4028235e+38 4.1887903e-01 3.4028235e+38], (4,), float32)":	{
+                                                    "_np_random":	null,
+                                                    "_shape":	[
+                                                        4
+                                                    ],
+                                                    "bounded_above":	"[ True  True  True  True]",
+                                                    "bounded_below":	"[ True  True  True  True]",
+                                                    "dtype":	"float32",
+                                                    "high":	"[4.8000002e+00 3.4028235e+38 4.1887903e-01 3.4028235e+38]",
+                                                    "high_repr":	"[4.8000002e+00 3.4028235e+38 4.1887903e-01 3.4028235e+38]",
+                                                    "low":	"[-4.8000002e+00 -3.4028235e+38 -4.1887903e-01 -3.4028235e+38]",
+                                                    "low_repr":	"[-4.8000002e+00 -3.4028235e+38 -4.1887903e-01 -3.4028235e+38]"
+                                                }
+                                            },
+                                            "polemass_length":	0.05,
+                                            "render_mode":	null,
+                                            "screen":	null,
+                                            "screen_height":	400,
+                                            "screen_width":	600,
+                                            "spec":	{
+                                                "EnvSpec(id='CartPole-v1', entry_point='gymnasium.envs.classic_control.cartpole:CartPoleEnv', reward_threshold=475.0, nondeterministic=False, max_episode_steps=None, order_enforce=False, autoreset=False, disable_env_checker=True, apply_api_compatibility=False, kwargs={}, namespace=None, name='CartPole', version=1, additional_wrappers=(), vector_entry_point='gymnasium.envs.classic_control.cartpole:CartPoleVectorEnv')":	{
+                                                    "additional_wrappers":	[],
+                                                    "apply_api_compatibility":	false,
+                                                    "autoreset":	false,
+                                                    "disable_env_checker":	true,
+                                                    "entry_point":	"gymnasium.envs.classic_control.cartpole:CartPoleEnv",
+                                                    "id":	"CartPole-v1",
+                                                    "kwargs":	{},
+                                                    "max_episode_steps":	null,
+                                                    "name":	"CartPole",
+                                                    "namespace":	null,
+                                                    "nondeterministic":	false,
+                                                    "order_enforce":	false,
+                                                    "reward_threshold":	475.0,
+                                                    "vector_entry_point":	"gymnasium.envs.classic_control.cartpole:CartPoleVectorEnv",
+                                                    "version":	1
+                                                }
+                                            },
+                                            "state":	null,
+                                            "steps_beyond_terminated":	null,
+                                            "tau":	0.02,
+                                            "theta_threshold_radians":	0.20943951023931953,
+                                            "total_mass":	1.1,
+                                            "x_threshold":	2.4
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "logger":	{
+                "<src.utils.logx.EpochLogger object at 0x7f2a1ecca9e0>":	{
+                    "epoch_dict":	{},
+                    "exp_name":	"DQN_test",
+                    "first_row":	true,
+                    "log_current_row":	{},
+                    "log_headers":	[],
+                    "output_dir":	"output/DQN_test/DQN_test_s1",
+                    "output_file":	{
+                        "<_io.TextIOWrapper name='output/DQN_test/DQN_test_s1/progress.txt' mode='w' encoding='UTF-8'>":	{
+                            "mode":	"w"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

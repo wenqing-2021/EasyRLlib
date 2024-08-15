@@ -3,18 +3,18 @@ import numpy as np
 import gymnasium as gym
 from abc import ABC, abstractmethod
 from gymnasium.spaces import Box, Discrete
-from config.configure import RunConfig
-from utils.logx import EpochLogger
-from utils.mpi_pytorch import setup_pytorch_for_mpi, sync_params
-from utils.mpi_tools import (
+from src.config.configure import RunConfig
+from src.utils.logx import EpochLogger
+from src.utils.mpi_pytorch import setup_pytorch_for_mpi, sync_params
+from src.utils.mpi_tools import (
     mpi_avg,
     proc_id,
     mpi_statistics_scalar,
     num_procs,
 )
-from common.base_agent import OnPolicyAgent, OffPolicyAgent, BaseAgent
-from common.buffer import OffPolicyBuffer, OnPolicyBuffer
-from common.networks import count_vars
+from src.common.base_agent import OnPolicyAgent, OffPolicyAgent, BaseAgent
+from src.common.buffer import OffPolicyBuffer, OnPolicyBuffer
+from src.common.networks import count_vars
 
 
 class BaseTrainer(ABC):
@@ -69,15 +69,21 @@ class BaseTrainer(ABC):
 class OffPolicyTrain(BaseTrainer):
     def __init__(self, configure: RunConfig = None, env: gym.Env = None) -> None:
         super().__init__(configure, env)
-        self.update_every = self.configure.train_config.update_every
-        self.soft_update_every = self.configure.train_config.soft_update_every
+        self.update_every = (
+            self.configure.train_config.off_policy_train_config.update_every
+        )
+        self.soft_update_every = (
+            self.configure.train_config.off_policy_train_config.soft_update_every
+        )
         self.steps_per_epoch = int(
             self.configure.train_config.total_steps / self.configure.train_config.epochs
         )
 
     def _random_explore(self, buffer: OffPolicyBuffer, seed) -> None:
         obs, _ = self.env.reset(seed=seed)
-        for _ in range(self.configure.train_config.random_explor_steps):
+        for _ in range(
+            self.configure.train_config.off_policy_train_config.random_explor_steps
+        ):
             act = self.env.action_space.sample()
             next_obs, rew, done, _, info = self.env.step(act)
             buffer.store(obs, act, next_obs, rew, done)

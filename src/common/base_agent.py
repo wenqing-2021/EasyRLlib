@@ -13,8 +13,8 @@ import numpy as np
 from abc import ABC, abstractmethod
 import gymnasium as gym
 from gymnasium.spaces import Box, Discrete
-from common.buffer import BufferData
-from utils.logx import EpochLogger
+from src.common.buffer import BufferData
+from src.utils.logx import EpochLogger
 from typing import List, Union, Tuple
 
 
@@ -86,16 +86,24 @@ class BaseAgent(ABC, nn.Module):
 
 class OffPolicyAgent(BaseAgent):
     def __init__(
-        self, observation_space: gym.Space, action_space: gym.Space, device: str = None
+        self,
+        observation_space: gym.Space,
+        action_space: gym.Space,
+        device: str = None,
+        logger: EpochLogger = None,
     ) -> None:
-        super().__init__(observation_space, action_space, device)
+        super().__init__(observation_space, action_space, device, logger)
 
 
 class OnPolicyAgent(BaseAgent):
     def __init__(
-        self, observation_space: gym.Space, action_space: gym.Space, device: str = None
+        self,
+        observation_space: gym.Space,
+        action_space: gym.Space,
+        device: str = None,
+        logger: EpochLogger = None,
     ) -> None:
-        super().__init__(observation_space, action_space, device)
+        super().__init__(observation_space, action_space, device, logger)
 
     @abstractmethod
     def calc_state_value(self, obs) -> np.ndarray:
