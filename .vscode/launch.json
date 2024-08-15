@@ -13,10 +13,7 @@
             "justMyCode": true,
             "cwd": "${workspaceFolder}",
             "envFile": "${workspaceFolder}/.env",
-            "args": [
-                "--num_envs",
-                "1",
-            ]
+            "args": []
         },
     ]
 }

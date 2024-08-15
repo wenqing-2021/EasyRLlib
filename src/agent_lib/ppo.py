@@ -1,8 +1,8 @@
-from common.base_agent import OnPolicyAgent
-from common.buffer import BufferData
-from common.networks import MLPCategoricalActor, MLPGaussianActor, MLPCritic
-from config.configure import RunConfig
-from utils.mpi_pytorch import mpi_avg_grads
+from src.common.base_agent import OnPolicyAgent
+from src.common.buffer import BufferData
+from src.common.networks import MLPCategoricalActor, MLPGaussianActor, MLPCritic
+from src.config.configure import RunConfig
+from src.utils.mpi_pytorch import mpi_avg_grads
 
 import gymnasium as gym
 from gymnasium import Space
