@@ -3,6 +3,7 @@ from src.common.buffer import BufferData
 from src.common.networks import MLPCategoricalActor, MLPGaussianActor, MLPCritic
 from src.config.configure import RunConfig
 from src.utils.mpi_pytorch import mpi_avg_grads
+from src.utils.logx import EpochLogger
 
 import gymnasium as gym
 from gymnasium import Space
@@ -19,8 +20,9 @@ class PPO(OnPolicyAgent):
         observation_space: gym.Space = None,
         action_space: gym.Space = None,
         configure: RunConfig = None,
+        logger: EpochLogger = None,
     ) -> None:
-        super().__init__(observation_space, action_space, configure.device)
+        super().__init__(observation_space, action_space, configure.device, logger)
         self.obs_dim = observation_space.shape[0]
         if isinstance(action_space, Discrete):
             self.act_dim = action_space.n
@@ -29,7 +31,7 @@ class PPO(OnPolicyAgent):
                 self.act_dim,
                 configure.agent_config.hidden_sizes,
                 configure.agent_config.activation,
-            )
+            ).to(self.device)
         elif isinstance(action_space, Box):
             self.act_dim = action_space.shape[0]
             self.policy = MLPGaussianActor(
@@ -37,7 +39,7 @@ class PPO(OnPolicyAgent):
                 self.act_dim,
                 configure.agent_config.hidden_sizes,
                 configure.agent_config.activation,
-            )
+            ).to(self.device)
         else:
             raise ValueError("ONLY Discrete or Box action space is supported")
         self.policy_optimizer = torch.optim.AdamW(
@@ -47,7 +49,7 @@ class PPO(OnPolicyAgent):
             self.obs_dim,
             configure.agent_config.hidden_sizes,
             configure.agent_config.activation,
-        )
+        ).to(self.device)
         self.critic_optimizer = torch.optim.AdamW(
             self.critic.parameters(), lr=configure.agent_config.value_lr
         )
@@ -56,6 +58,8 @@ class PPO(OnPolicyAgent):
         self.update_times = configure.train_config.on_policy_train_config.update_times
 
     def act(self, obs) -> Tuple[np.ndarray]:
+        if isinstance(obs, np.ndarray):
+            obs = torch.tensor(obs, dtype=torch.float32).to(self.device)
         with torch.no_grad():
             pi = self.policy._distribution(obs)
             a = pi.sample()
@@ -87,6 +91,8 @@ class PPO(OnPolicyAgent):
         self.logger.store(Stopiter=i)
 
     def calc_state_value(self, obs) -> np.ndarray:
+        if isinstance(obs, np.ndarray):
+            obs = torch.tensor(obs, dtype=torch.float32).to(self.device)
         with torch.no_grad():
             state_value = self.critic.forward(obs)
         return state_value.cpu().numpy()

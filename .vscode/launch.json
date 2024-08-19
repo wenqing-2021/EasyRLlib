@@ -12,8 +12,10 @@
             "console": "integratedTerminal",
             "justMyCode": true,
             "cwd": "${workspaceFolder}",
-            "envFile": "${workspaceFolder}/.env",
-            "args": []
+            "args": [
+                "--config_path",
+                "/home/EasyRLlib/experiment/ppo_cartpole/run_config.yaml"
+            ]
         },
     ]
 }
