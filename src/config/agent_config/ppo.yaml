@@ -2,6 +2,6 @@ agent_name: "PPO" # ["PPO"]
 
 policy_lr: 0.0003 # DO NOT enter 1e-3, this will be regarded as a string
 value_lr: 0.001
-lam: 0.95
+lam: 0.97
 target_kl: 0.01
 clip_ratio: 0.2

@@ -2,7 +2,7 @@ from src.common.base_agent import OnPolicyAgent
 from src.common.buffer import BufferData
 from src.common.networks import MLPCategoricalActor, MLPGaussianActor, MLPCritic
 from src.config.configure import RunConfig
-from src.utils.mpi_pytorch import mpi_avg_grads
+from src.utils.mpi_pytorch import mpi_avg_grads, mpi_avg
 from src.utils.logx import EpochLogger
 
 import gymnasium as gym
@@ -69,24 +69,28 @@ class PPO(OnPolicyAgent):
 
     def learn(self, batch_data: BufferData) -> None:
         batch_data.convert_to_tensor()
-
+        loss_pi_info_old = self._calc_pi_loss(batch_data)
+        loss_v_info_old = self._calc_v_loss(batch_data)
         for i in range(self.update_times):
-            loss_pi = self._calc_pi_loss(batch_data)
-            loss_v = self._calc_v_loss(batch_data)
+            loss_pi_info = self._calc_pi_loss(batch_data)
+            loss_v_info = self._calc_v_loss(batch_data)
 
-            if self.logger.get_stats("KL") > 1.2 * self.target_kl:
+            if mpi_avg(loss_pi_info["KL"]) > 1.2 * self.target_kl:
                 self.logger.log("Early stopping at step %d due to reaching max kl." % i)
                 break
 
             self.policy_optimizer.zero_grad()
-            loss_pi.backward()
+            loss_pi_info["LossPi"].backward()
             mpi_avg_grads(self.policy)
             self.policy_optimizer.step()
 
             self.critic_optimizer.zero_grad()
-            loss_v.backward()
+            loss_v_info["LossV"].backward()
             mpi_avg_grads(self.critic)
             self.critic_optimizer.step()
+        
+        self.logger.store(LossPi=loss_pi_info_old["LossPi"].cpu().item(),
+                          LossV=loss_v_info_old["LossV"].cpu().item())
 
         self.logger.store(Stopiter=i)
 
@@ -114,29 +118,29 @@ class PPO(OnPolicyAgent):
         approx_kl = (log_pi_old - log_pi).mean().cpu().item()
         entropy = pi.entropy().mean().cpu().item()
         clip_frac = (
-            (ratio.gt(1 + self.clip_ratio) | ratio.lt(1 - self.clip_ratio))
+            torch.as_tensor(ratio.gt(1 + self.clip_ratio) | ratio.lt(1 - self.clip_ratio), dtype=torch.float32)
             .mean()
             .cpu()
             .item()
         )
 
         # log info
-        self.logger.store(
-            LossPi=loss_pi.cpu().item(),
-            KL=approx_kl,
-            Entropy=entropy,
-            ClipFrac=clip_frac,
-        )
+        loss_pi_info = {
+            "LossPi": loss_pi,
+            "KL": approx_kl,
+            "Entropy": entropy,
+            "ClipFrac": clip_frac
+        }
 
-        return loss_pi
+        return loss_pi_info
 
     def _calc_v_loss(self, batch_data: BufferData) -> torch.Tensor:
         obs = batch_data.obs
-        ret = batch_data.ret
-        state_value = self.critic.forward(obs)
-        loss_v = nn.functional.mse_loss(state_value, ret).mean()
+        ret = batch_data.discount_ret
+        state_value = self.critic.forward(obs).reshape(ret.shape)
+        loss_v = 0.5 * ((state_value-ret)**2).mean()
 
         # log info
-        self.logger.store(LossV=loss_v.cpu().item())
+        loss_v_info = {"LossV":loss_v}
 
-        return loss_v
+        return loss_v_info
