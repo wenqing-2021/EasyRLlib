@@ -4,11 +4,11 @@ env_config:
 
 train_config:
   seed: 1
-  epochs: 125
+  epochs: 25
   total_steps: 100000
   num_envs: 4
   batch_size: 64
-  buffer_size: 256 # NOT used in on-policy training
+  buffer_size: 256
 
   off_policy_train_config:
     update_every: 10

@@ -103,7 +103,9 @@ class OffPolicyTrain(BaseTrainer):
         self, buffer: OffPolicyBuffer = None, agent: OffPolicyAgent = None
     ) -> None:
         local_steps_per_epoch = int(
-            self.configure.train_config.total_steps / self.configure.train_config.epochs / num_procs()
+            self.configure.train_config.total_steps
+            / self.configure.train_config.epochs
+            / num_procs()
         )
         obs = self._init_env()
         for steps in range(local_steps_per_epoch):
@@ -206,6 +208,7 @@ class OnPolicyTrain(BaseTrainer):
     ) -> None:
         max_steps = buffer.buffer_size
         max_ep_steps = self.configure.train_config.on_policy_train_config.max_ep_len
+        buffer.clear()
         obs = self._init_env()
         for steps in range(max_steps):
             act, log_pi = agent.act(obs)
@@ -221,9 +224,11 @@ class OnPolicyTrain(BaseTrainer):
                     last_state_v = 0
                 else:
                     last_state_v = agent.calc_state_value(obs)
-                buffer.finish_path(last_state_v=last_state_v,
-                                   gamma=self.configure.agent_config.gamma,
-                                   lam=self.configure.agent_config.lam)
+                buffer.finish_path(
+                    last_state_v=last_state_v,
+                    gamma=self.configure.agent_config.gamma,
+                    lam=self.configure.agent_config.lam,
+                )
                 self.logger.store(EpRet=self._ep_ret, EpLen=self._ep_len)
                 obs = self._init_env()
 
