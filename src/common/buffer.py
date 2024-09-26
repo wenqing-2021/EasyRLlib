@@ -201,7 +201,7 @@ class OnPolicyBuffer(BaseBuffer):
 
     def get(self) -> BufferData:
         batch_data = BufferData(device=self.data.device)
-        assert self.count == self.buffer_size # on-policy buffer has to be full
+        assert self.count == self.buffer_size  # on-policy buffer has to be full
         self.count, self.path_start_idx = 0, 0
         adv_mean, adv_std = mpi_statistics_scalar(self.data.gae_adv)
         self.data.gae_adv = (self.data.gae_adv - adv_mean) / adv_std

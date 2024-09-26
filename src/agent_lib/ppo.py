@@ -88,9 +88,11 @@ class PPO(OnPolicyAgent):
             loss_v_info["LossV"].backward()
             mpi_avg_grads(self.critic)
             self.critic_optimizer.step()
-        
-        self.logger.store(LossPi=loss_pi_info_old["LossPi"].cpu().item(),
-                          LossV=loss_v_info_old["LossV"].cpu().item())
+
+        self.logger.store(
+            LossPi=loss_pi_info_old["LossPi"].cpu().item(),
+            LossV=loss_v_info_old["LossV"].cpu().item(),
+        )
 
         self.logger.store(Stopiter=i)
 
@@ -109,7 +111,7 @@ class PPO(OnPolicyAgent):
 
         pi = self.policy._distribution(obs)
         log_pi = self.policy._log_prob_from_distribution(pi, act)
-        ratio = torch.exp(log_pi - log_pi_old)
+        ratio = torch.exp(log_pi - log_pi_old.detach())
         clip_adv = (
             torch.clamp(ratio, 1 - self.clip_ratio, 1 + self.clip_ratio) * advantage
         )
@@ -118,7 +120,10 @@ class PPO(OnPolicyAgent):
         approx_kl = (log_pi_old - log_pi).mean().cpu().item()
         entropy = pi.entropy().mean().cpu().item()
         clip_frac = (
-            torch.as_tensor(ratio.gt(1 + self.clip_ratio) | ratio.lt(1 - self.clip_ratio), dtype=torch.float32)
+            torch.as_tensor(
+                ratio.gt(1 + self.clip_ratio) | ratio.lt(1 - self.clip_ratio),
+                dtype=torch.float32,
+            )
             .mean()
             .cpu()
             .item()
@@ -129,7 +134,7 @@ class PPO(OnPolicyAgent):
             "LossPi": loss_pi,
             "KL": approx_kl,
             "Entropy": entropy,
-            "ClipFrac": clip_frac
+            "ClipFrac": clip_frac,
         }
 
         return loss_pi_info
@@ -138,9 +143,9 @@ class PPO(OnPolicyAgent):
         obs = batch_data.obs
         ret = batch_data.discount_ret
         state_value = self.critic.forward(obs).reshape(ret.shape)
-        loss_v = 0.5 * ((state_value-ret)**2).mean()
+        loss_v = 0.5 * ((state_value - ret) ** 2).mean()
 
         # log info
-        loss_v_info = {"LossV":loss_v}
+        loss_v_info = {"LossV": loss_v}
 
         return loss_v_info
