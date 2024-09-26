@@ -4,11 +4,11 @@ env_config:
 
 train_config:
   seed: 1
-  epochs: 25
-  total_steps: 20000
-  num_envs: 1
+  epochs: 125
+  total_steps: 100000
+  num_envs: 4
   batch_size: 64
-  buffer_size: 256
+  buffer_size: 256 # NOT used in on-policy training
 
   off_policy_train_config:
     update_every: 10
@@ -21,6 +21,6 @@ train_config:
 
 
 agent_config_path: "src/config/agent_config/ppo.yaml"
-exp_name: "DQN_test"
+exp_name: "PPO_test"
 save_path: "output/"
 device: "cuda"

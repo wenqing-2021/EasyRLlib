@@ -4,7 +4,8 @@ from typing import Union
 import torch
 import numpy as np
 import gymnasium as gym
-import scipy
+import scipy.signal
+from src.utils.mpi_tools import mpi_statistics_scalar
 
 
 @dataclass
@@ -179,8 +180,6 @@ class OnPolicyBuffer(BaseBuffer):
         self.data.log_pi[self.count] = log_p
         self.data.state_v[self.count] = state_v
         self.count += 1
-        if self.count >= self.buffer_size:
-            self.count = 0
 
     @staticmethod
     def discount_cumsum(x, discount):
@@ -202,6 +201,16 @@ class OnPolicyBuffer(BaseBuffer):
 
     def get(self) -> BufferData:
         batch_data = BufferData(device=self.data.device)
+        assert self.count == self.buffer_size # on-policy buffer has to be full
+        self.count, self.path_start_idx = 0, 0
+        adv_mean, adv_std = mpi_statistics_scalar(self.data.gae_adv)
+        self.data.gae_adv = (self.data.gae_adv - adv_mean) / adv_std
+
+        for k, v in self.data.__dict__.items():
+            if v is not None and isinstance(v, np.ndarray):
+                batch_data.__dict__[k] = v
+
+        return batch_data
 
     def finish_path(
         self,
