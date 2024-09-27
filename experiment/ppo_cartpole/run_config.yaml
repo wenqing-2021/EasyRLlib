@@ -4,9 +4,9 @@ env_config:
 
 train_config:
   seed: 1
-  epochs: 200
+  epochs: 50
   total_steps: 100000
-  num_envs: 1
+  num_envs: 4
   batch_size: 64
   buffer_size: 256
 
@@ -17,7 +17,7 @@ train_config:
   
   on_policy_train_config:
     update_times: 80
-    max_ep_len: 1000
+    max_ep_len: 500
 
 
 agent_config_path: "src/config/agent_config/ppo.yaml"

@@ -7,9 +7,7 @@ from src.config.configure import RunConfig
 from src.utils.logx import EpochLogger
 from src.utils.mpi_pytorch import setup_pytorch_for_mpi, sync_params
 from src.utils.mpi_tools import (
-    mpi_avg,
     proc_id,
-    mpi_statistics_scalar,
     num_procs,
 )
 from src.common.base_agent import OnPolicyAgent, OffPolicyAgent, BaseAgent
@@ -75,12 +73,14 @@ class BaseTrainer(ABC):
     def _render_env(self, agent: BaseAgent) -> None:
         render_env = gym.make(self.configure.env_config.env_name, render_mode="human")
         obs, _ = render_env.reset()
-        for _ in range(1000):
+        render_times = 10
+        while render_times > 0:
             act = agent.act(obs)
             next_obs, rew, done, _, info = render_env.step(act)
             obs = next_obs
             if done:
                 obs, _ = render_env.reset()
+                render_times -= 1
 
         render_env.close()
 
@@ -214,15 +214,15 @@ class OnPolicyTrain(BaseTrainer):
             self.logger.log_tabular("LossPi", average_only=True)
             self.logger.log_tabular("LossV", average_only=True)
             self.logger.dump_tabular()
-
-            self._render_env(agent)
+            if self.configure.train_config.render:
+                self._render_env(agent)
 
     def _agent_explore_learn(
         self, buffer: OnPolicyBuffer = None, agent: OnPolicyAgent = None
     ) -> None:
         max_steps = buffer.buffer_size
         max_ep_steps = self.configure.train_config.on_policy_train_config.max_ep_len
-        buffer.clear()
+
         obs = self._init_env()
         for steps in range(max_steps):
             act, log_pi = agent.evaluate(obs)

@@ -52,6 +52,7 @@ class TrainConfig(BaseConfig):
     buffer_size: int = 1e5
     off_policy_train_config: OffPolicyTrainConfig = None
     on_policy_train_config: OnPolicyTrainConfig = None
+    render: bool = False
 
 
 @dataclass

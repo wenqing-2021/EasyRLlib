@@ -119,7 +119,11 @@ class PPO(OnPolicyAgent):
         log_pi_old: torch.Tensor = batch_data.log_pi
 
         pi = self.policy._distribution(obs)
-        log_pi = self.policy._log_prob_from_distribution(pi, act)
+        log_pi = (
+            self.policy._log_prob_from_distribution(pi, act)
+            .unsqueeze(-1)
+            .expand_as(log_pi_old)
+        )
         ratio = torch.exp(log_pi - log_pi_old.detach())
         clip_adv = (
             torch.clamp(ratio, 1 - self.clip_ratio, 1 + self.clip_ratio) * advantage
