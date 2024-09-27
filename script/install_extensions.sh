@@ -124,3 +124,8 @@ do
         echo "Failed to install $plugin"
     fi
 done
+
+# install nessasery packages
+pip3 install pygame
+pip3 install seaborn
+apt-get install -y python3-tk
