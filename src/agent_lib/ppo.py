@@ -57,15 +57,24 @@ class PPO(OnPolicyAgent):
         self.clip_ratio = configure.agent_config.clip_ratio
         self.update_times = configure.train_config.on_policy_train_config.update_times
 
-    def act(self, obs) -> Tuple[np.ndarray]:
+    def act(self, obs) -> np.ndarray:
         if isinstance(obs, np.ndarray):
             obs = torch.tensor(obs, dtype=torch.float32).to(self.device)
         with torch.no_grad():
             pi = self.policy._distribution(obs)
             a = pi.sample()
-            logp_a = self.policy._log_prob_from_distribution(pi, a)
 
-        return a.cpu().numpy(), logp_a.cpu().numpy()
+        return a.cpu().numpy()
+
+    def evaluate(self, obs) -> Tuple[torch.Tensor, torch.Tensor]:
+        if isinstance(obs, np.ndarray):
+            obs = torch.tensor(obs, dtype=torch.float32).to(self.device)
+        with torch.no_grad():
+            pi = self.policy._distribution(obs)
+            act = pi.sample()
+            logp_a = self.policy._log_prob_from_distribution(pi, act)
+
+        return act.cpu().detach().numpy(), logp_a.detach().cpu().numpy()
 
     def learn(self, batch_data: BufferData) -> None:
         batch_data.convert_to_tensor()
@@ -143,7 +152,7 @@ class PPO(OnPolicyAgent):
         obs = batch_data.obs
         ret = batch_data.discount_ret
         state_value = self.critic.forward(obs).reshape(ret.shape)
-        loss_v = 0.5 * ((state_value - ret) ** 2).mean()
+        loss_v = 0.5 * nn.functional.mse_loss(state_value, ret).mean()
 
         # log info
         loss_v_info = {"LossV": loss_v}

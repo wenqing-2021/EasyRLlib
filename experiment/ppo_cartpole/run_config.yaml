@@ -4,9 +4,9 @@ env_config:
 
 train_config:
   seed: 1
-  epochs: 25
+  epochs: 200
   total_steps: 100000
-  num_envs: 4
+  num_envs: 1
   batch_size: 64
   buffer_size: 256
 

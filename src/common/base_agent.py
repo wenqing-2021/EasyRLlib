@@ -47,7 +47,7 @@ class BaseAgent(ABC, nn.Module):
             self.device = torch.device(device)
 
     @abstractmethod
-    def act(self, obs, act) -> Tuple[np.ndarray]:
+    def act(self, obs, act) -> np.ndarray:
         """
         description: get the action from the actor network
         return {*}
@@ -109,6 +109,14 @@ class OnPolicyAgent(BaseAgent):
     def calc_state_value(self, obs) -> np.ndarray:
         """
         description: calculate the state value
+        return {*}
+        """
+        pass
+
+    @abstractmethod
+    def evaluate(self, obs, act) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        description: evaluate the action
         return {*}
         """
         pass

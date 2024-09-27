@@ -72,6 +72,18 @@ class BaseTrainer(ABC):
 
         return seed
 
+    def _render_env(self, agent: BaseAgent) -> None:
+        render_env = gym.make(self.configure.env_config.env_name, render_mode="human")
+        obs, _ = render_env.reset()
+        for _ in range(1000):
+            act = agent.act(obs)
+            next_obs, rew, done, _, info = render_env.step(act)
+            obs = next_obs
+            if done:
+                obs, _ = render_env.reset()
+
+        render_env.close()
+
 
 class OffPolicyTrain(BaseTrainer):
     def __init__(self, configure: RunConfig = None, env: gym.Env = None) -> None:
@@ -203,6 +215,8 @@ class OnPolicyTrain(BaseTrainer):
             self.logger.log_tabular("LossV", average_only=True)
             self.logger.dump_tabular()
 
+            self._render_env(agent)
+
     def _agent_explore_learn(
         self, buffer: OnPolicyBuffer = None, agent: OnPolicyAgent = None
     ) -> None:
@@ -211,7 +225,7 @@ class OnPolicyTrain(BaseTrainer):
         buffer.clear()
         obs = self._init_env()
         for steps in range(max_steps):
-            act, log_pi = agent.act(obs)
+            act, log_pi = agent.evaluate(obs)
             state_v = agent.calc_state_value(obs)
             next_obs, rew, done, _, info = self.env.step(act)
             buffer.store(obs, act, next_obs, rew, done, log_pi, state_v)
