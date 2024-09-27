@@ -141,11 +141,11 @@ class OnPolicyBuffer(BaseBuffer):
         super().__init__(buffer_size, batch_size, device)
         self.obs_shape = obs_shape
         self.act_shape = act_shape
-        self.count, self.path_start_idx = 0, 0
         self._initialize(obs_shape, act_shape)
 
     def _initialize(self, obs_shape=None, act_shape=None):
         super()._initialize(obs_shape, act_shape)
+        self.count, self.path_start_idx = 0, 0
         self.data.__setattr__(
             "log_pi", np.zeros((self.buffer_size, 1), dtype=np.float32)
         )
@@ -202,13 +202,14 @@ class OnPolicyBuffer(BaseBuffer):
     def get(self) -> BufferData:
         batch_data = BufferData(device=self.data.device)
         assert self.count == self.buffer_size  # on-policy buffer has to be full
-        self.count, self.path_start_idx = 0, 0
         adv_mean, adv_std = mpi_statistics_scalar(self.data.gae_adv)
         self.data.gae_adv = (self.data.gae_adv - adv_mean) / adv_std
 
         for k, v in self.data.__dict__.items():
             if v is not None and isinstance(v, np.ndarray):
                 batch_data.__dict__[k] = v
+
+        self.clear()
 
         return batch_data
 
