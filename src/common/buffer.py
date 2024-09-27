@@ -22,7 +22,7 @@ class BufferData:
             if v is not None and isinstance(v, np.ndarray):
                 self.__dict__[k] = torch.as_tensor(
                     v, dtype=torch.float32, device=self.device
-                )
+                ).detach()
 
     def convert_to_array(self):
         for k, v in self.__dict__.items():
