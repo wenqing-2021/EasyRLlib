@@ -1,6 +1,9 @@
 import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib
+
+matplotlib.use("TkAgg")
 import json
 import os
 import os.path as osp
@@ -37,16 +40,8 @@ def plot_data(
 
     if isinstance(data, list):
         data = pd.concat(data, ignore_index=True)
-    sns.set(style="darkgrid", font_scale=1.5)
-    sns.tsplot(
-        data=data,
-        time=xaxis,
-        value=value,
-        unit="Unit",
-        condition=condition,
-        ci="sd",
-        **kwargs
-    )
+    sns.set_theme(style="darkgrid", font_scale=1.5)
+    sns.lineplot(data=data, x=xaxis, y=value, hue=condition, errorbar="sd", **kwargs)
     """
     If you upgrade to any version of Seaborn greater than 0.8.1, switch from 
     tsplot to lineplot replacing L29 with:
