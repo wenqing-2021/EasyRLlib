@@ -6,7 +6,6 @@ from src.utils.mpi_pytorch import mpi_avg_grads, mpi_avg
 from src.utils.logx import EpochLogger
 
 import gymnasium as gym
-from gymnasium import Space
 from gymnasium.spaces import Box, Discrete
 from typing import Tuple
 import numpy as np
@@ -47,11 +46,12 @@ class PPO(OnPolicyAgent):
         )
         self.critic = MLPCritic(
             self.obs_dim,
+            self.act_dim,
             configure.agent_config.hidden_sizes,
             configure.agent_config.activation,
         ).to(self.device)
         self.critic_optimizer = torch.optim.AdamW(
-            self.critic.parameters(), lr=configure.agent_config.value_lr
+            self.critic.parameters(), lr=configure.agent_config.critic_lr
         )
         self.target_kl = configure.agent_config.target_kl
         self.clip_ratio = configure.agent_config.clip_ratio

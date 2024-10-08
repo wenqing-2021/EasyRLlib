@@ -62,19 +62,18 @@ class AgentConfig(BaseConfig):
     gamma: float = 0.99
     activation_name: str = "Tanh"
     activation: nn.Module = None
+    policy_lr: float = None
+    critic_lr: float = None
 
 
 @dataclass
 class DQNConfig(AgentConfig):
-    q_lr: float = 1e-3
     epsilon: float = 0.1  # epsilon greedy exploration
     tau: float = 0.005
 
 
 @dataclass
 class PPOConfig(AgentConfig):
-    policy_lr: float = 1e-3
-    value_lr: float = 1e-3
     lam: float = 0.95
     target_kl: float = 0.01
     clip_ratio: float = 0.2
