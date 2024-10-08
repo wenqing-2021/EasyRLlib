@@ -27,7 +27,7 @@ class DQN(OffPolicyAgent):
         self.obs_dim = observation_space.shape[0]
         self.act_dim = action_space.n
         self.hidden_sizes = configure.agent_config.hidden_sizes
-        self.q_lr = configure.agent_config.q_lr
+        self.policy_lr = configure.agent_config.policy_lr
         self.activation = configure.agent_config.activation
         self.epsilon = configure.agent_config.epsilon
         self.gamma = configure.agent_config.gamma
@@ -39,7 +39,7 @@ class DQN(OffPolicyAgent):
         ).to(self.device)
         self.target_q = copy.deepcopy(self.policy)
         self.policy_optimizer = torch.optim.AdamW(
-            self.policy.parameters(), lr=self.q_lr
+            self.policy.parameters(), lr=self.policy_lr
         )
         self.set_soft_update(
             [self.target_q], [self.policy], tau=configure.agent_config.tau

@@ -19,6 +19,13 @@ from typing import List, Union, Tuple
 
 
 class BaseAgent(ABC, nn.Module):
+    """
+    base agent class
+    need to implement the methods: \n
+    act(obs) -> np.ndarray \n
+    learn(batch_data: BufferData) -> None \n
+    """
+
     def __init__(
         self,
         observation_space: gym.Space,
@@ -47,7 +54,7 @@ class BaseAgent(ABC, nn.Module):
             self.device = torch.device(device)
 
     @abstractmethod
-    def act(self, obs, act) -> np.ndarray:
+    def act(self, obs) -> np.ndarray:
         """
         description: get the action from the actor network
         return {*}
