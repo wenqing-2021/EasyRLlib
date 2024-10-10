@@ -52,7 +52,7 @@ class OffPolicyTrain(BaseTrainer):
             if steps % self.soft_update_every == 0:
                 agent.soft_update()
             buffer.store(obs, act, next_obs, rew, done)
-            if done:
+            if done or steps == local_steps_per_epoch - 1:
                 self.logger.store(EpRet=self._ep_ret, EpLen=self._ep_len)
                 obs = self._init_env()
             else:
