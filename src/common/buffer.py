@@ -125,6 +125,7 @@ class OffPolicyBuffer(BaseBuffer):
             for k, v in self.data.__dict__.items():
                 if v is not None and isinstance(v, np.ndarray):
                     batch_data.__dict__[k] = v[idx]
+        batch_data.convert_to_tensor()
 
         return batch_data
 
@@ -210,6 +211,7 @@ class OnPolicyBuffer(BaseBuffer):
                 batch_data.__dict__[k] = v
 
         self.clear()
+        batch_data.convert_to_tensor()
 
         return batch_data
 

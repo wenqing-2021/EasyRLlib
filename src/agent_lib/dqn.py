@@ -57,7 +57,6 @@ class DQN(OffPolicyAgent):
         return action
 
     def learn(self, batch_data: BufferData) -> None:
-        batch_data.convert_to_tensor()
         with torch.no_grad():
             obs = batch_data.obs
             act = batch_data.act
