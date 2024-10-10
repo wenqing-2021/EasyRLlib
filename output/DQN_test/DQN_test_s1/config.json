@@ -1,18 +1,19 @@
 {
     "configure":	{
-        "RunConfig(env_config=EnvConfig(env_name='CartPole-v1'), train_config=TrainConfig(seed=1, epochs=125, total_steps=100000, num_envs=4, batch_size=64, buffer_size=10000, off_policy_train_config=OffPolicyTrainConfig(update_every=10, random_explor_steps=1000, soft_update_every=50), on_policy_train_config=OnPolicyTrainConfig(update_times=80, max_ep_len=1000)), agent_config=DQNConfig(agent_name='DQN', hidden_sizes=[64, 64], gamma=0.99, activation_name='Tanh', activation=<class 'torch.nn.modules.activation.Tanh'>, q_lr=0.001, epsilon=0.1, tau=0.005), device='cuda', agent_config_path='src/config/agent_config/dqn.yaml', save_path='output/', exp_name='DQN_test')":	{
+        "RunConfig(env_config=EnvConfig(env_name='CartPole-v1'), train_config=TrainConfig(seed=1, epochs=125, total_steps=100000, num_envs=4, batch_size=64, buffer_size=10000, off_policy_train_config=OffPolicyTrainConfig(update_every=10, random_explor_steps=1000, soft_update_every=50), on_policy_train_config=OnPolicyTrainConfig(update_times=80, max_ep_len=1000), render=False), agent_config=DQNConfig(agent_name='DQN', hidden_sizes=[64, 64], gamma=0.99, activation_name='Tanh', activation=<class 'torch.nn.modules.activation.Tanh'>, policy_lr=0.001, critic_lr=None, epsilon=0.1, tau=0.005), device='cuda', agent_config_path='src/config/agent_config/dqn.yaml', save_path='output/', exp_name='DQN_test')":	{
             "agent_config":	{
-                "DQNConfig(agent_name='DQN', hidden_sizes=[64, 64], gamma=0.99, activation_name='Tanh', activation=<class 'torch.nn.modules.activation.Tanh'>, q_lr=0.001, epsilon=0.1, tau=0.005)":	{
+                "DQNConfig(agent_name='DQN', hidden_sizes=[64, 64], gamma=0.99, activation_name='Tanh', activation=<class 'torch.nn.modules.activation.Tanh'>, policy_lr=0.001, critic_lr=None, epsilon=0.1, tau=0.005)":	{
                     "activation":	"Tanh",
                     "activation_name":	"Tanh",
                     "agent_name":	"DQN",
+                    "critic_lr":	null,
                     "epsilon":	0.1,
                     "gamma":	0.99,
                     "hidden_sizes":	[
                         64,
                         64
                     ],
-                    "q_lr":	0.001,
+                    "policy_lr":	0.001,
                     "tau":	0.005
                 }
             },
@@ -26,7 +27,7 @@
             "exp_name":	"DQN_test",
             "save_path":	"output/",
             "train_config":	{
-                "TrainConfig(seed=1, epochs=125, total_steps=100000, num_envs=4, batch_size=64, buffer_size=10000, off_policy_train_config=OffPolicyTrainConfig(update_every=10, random_explor_steps=1000, soft_update_every=50), on_policy_train_config=OnPolicyTrainConfig(update_times=80, max_ep_len=1000))":	{
+                "TrainConfig(seed=1, epochs=125, total_steps=100000, num_envs=4, batch_size=64, buffer_size=10000, off_policy_train_config=OffPolicyTrainConfig(update_every=10, random_explor_steps=1000, soft_update_every=50), on_policy_train_config=OnPolicyTrainConfig(update_times=80, max_ep_len=1000), render=False)":	{
                     "batch_size":	64,
                     "buffer_size":	10000,
                     "epochs":	125,
@@ -44,6 +45,7 @@
                             "update_times":	80
                         }
                     },
+                    "render":	false,
                     "seed":	1,
                     "total_steps":	100000
                 }
@@ -164,23 +166,24 @@
         "output_dir":	"output/DQN_test/DQN_test_s1"
     },
     "self":	{
-        "<src.train.policy_train.OffPolicyTrain object at 0x7fd9ffedc880>":	{
+        "<src.train.off_policy_train.OffPolicyTrain object at 0x7f266fdbcfd0>":	{
             "_ep_len":	0,
             "_ep_ret":	0,
             "configure":	{
-                "RunConfig(env_config=EnvConfig(env_name='CartPole-v1'), train_config=TrainConfig(seed=1, epochs=125, total_steps=100000, num_envs=4, batch_size=64, buffer_size=10000, off_policy_train_config=OffPolicyTrainConfig(update_every=10, random_explor_steps=1000, soft_update_every=50), on_policy_train_config=OnPolicyTrainConfig(update_times=80, max_ep_len=1000)), agent_config=DQNConfig(agent_name='DQN', hidden_sizes=[64, 64], gamma=0.99, activation_name='Tanh', activation=<class 'torch.nn.modules.activation.Tanh'>, q_lr=0.001, epsilon=0.1, tau=0.005), device='cuda', agent_config_path='src/config/agent_config/dqn.yaml', save_path='output/', exp_name='DQN_test')":	{
+                "RunConfig(env_config=EnvConfig(env_name='CartPole-v1'), train_config=TrainConfig(seed=1, epochs=125, total_steps=100000, num_envs=4, batch_size=64, buffer_size=10000, off_policy_train_config=OffPolicyTrainConfig(update_every=10, random_explor_steps=1000, soft_update_every=50), on_policy_train_config=OnPolicyTrainConfig(update_times=80, max_ep_len=1000), render=False), agent_config=DQNConfig(agent_name='DQN', hidden_sizes=[64, 64], gamma=0.99, activation_name='Tanh', activation=<class 'torch.nn.modules.activation.Tanh'>, policy_lr=0.001, critic_lr=None, epsilon=0.1, tau=0.005), device='cuda', agent_config_path='src/config/agent_config/dqn.yaml', save_path='output/', exp_name='DQN_test')":	{
                     "agent_config":	{
-                        "DQNConfig(agent_name='DQN', hidden_sizes=[64, 64], gamma=0.99, activation_name='Tanh', activation=<class 'torch.nn.modules.activation.Tanh'>, q_lr=0.001, epsilon=0.1, tau=0.005)":	{
+                        "DQNConfig(agent_name='DQN', hidden_sizes=[64, 64], gamma=0.99, activation_name='Tanh', activation=<class 'torch.nn.modules.activation.Tanh'>, policy_lr=0.001, critic_lr=None, epsilon=0.1, tau=0.005)":	{
                             "activation":	"Tanh",
                             "activation_name":	"Tanh",
                             "agent_name":	"DQN",
+                            "critic_lr":	null,
                             "epsilon":	0.1,
                             "gamma":	0.99,
                             "hidden_sizes":	[
                                 64,
                                 64
                             ],
-                            "q_lr":	0.001,
+                            "policy_lr":	0.001,
                             "tau":	0.005
                         }
                     },
@@ -194,7 +197,7 @@
                     "exp_name":	"DQN_test",
                     "save_path":	"output/",
                     "train_config":	{
-                        "TrainConfig(seed=1, epochs=125, total_steps=100000, num_envs=4, batch_size=64, buffer_size=10000, off_policy_train_config=OffPolicyTrainConfig(update_every=10, random_explor_steps=1000, soft_update_every=50), on_policy_train_config=OnPolicyTrainConfig(update_times=80, max_ep_len=1000))":	{
+                        "TrainConfig(seed=1, epochs=125, total_steps=100000, num_envs=4, batch_size=64, buffer_size=10000, off_policy_train_config=OffPolicyTrainConfig(update_every=10, random_explor_steps=1000, soft_update_every=50), on_policy_train_config=OnPolicyTrainConfig(update_times=80, max_ep_len=1000), render=False)":	{
                             "batch_size":	64,
                             "buffer_size":	10000,
                             "epochs":	125,
@@ -212,6 +215,7 @@
                                     "update_times":	80
                                 }
                             },
+                            "render":	false,
                             "seed":	1,
                             "total_steps":	100000
                         }
@@ -327,7 +331,7 @@
                 }
             },
             "logger":	{
-                "<src.utils.logx.EpochLogger object at 0x7fd9ffeddf60>":	{
+                "<src.utils.logx.EpochLogger object at 0x7f266fdbe500>":	{
                     "epoch_dict":	{},
                     "exp_name":	"DQN_test",
                     "first_row":	true,
