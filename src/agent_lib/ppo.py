@@ -77,7 +77,6 @@ class PPO(OnPolicyAgent):
         return act.cpu().detach().numpy(), logp_a.detach().cpu().numpy()
 
     def learn(self, batch_data: BufferData) -> None:
-        batch_data.convert_to_tensor()
         loss_pi_info_old = self._calc_pi_loss(batch_data)
         loss_v_info_old = self._calc_v_loss(batch_data)
         for i in range(self.update_times):
