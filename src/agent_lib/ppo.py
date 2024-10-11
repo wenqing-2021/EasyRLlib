@@ -77,11 +77,11 @@ class PPO(OnPolicyAgent):
         return act.cpu().detach().numpy(), logp_a.detach().cpu().numpy()
 
     def learn(self, batch_data: BufferData) -> None:
-        loss_pi_info_old = self._calc_pi_loss(batch_data)
-        loss_v_info_old = self._calc_v_loss(batch_data)
+        loss_pi_info_old = self._calc_actor_loss(batch_data)
+        loss_v_info_old = self._calc_critic_loss(batch_data)
         for i in range(self.update_times):
-            loss_pi_info = self._calc_pi_loss(batch_data)
-            loss_v_info = self._calc_v_loss(batch_data)
+            loss_pi_info = self._calc_actor_loss(batch_data)
+            loss_v_info = self._calc_critic_loss(batch_data)
 
             if mpi_avg(loss_pi_info["KL"]) > 1.2 * self.target_kl:
                 self.logger.log("Early stopping at step %d due to reaching max kl." % i)
@@ -111,7 +111,7 @@ class PPO(OnPolicyAgent):
             state_value = self.critic.forward(obs)
         return state_value.cpu().numpy()
 
-    def _calc_pi_loss(self, batch_data: BufferData) -> torch.Tensor:
+    def _calc_actor_loss(self, batch_data: BufferData) -> torch.Tensor:
         obs = batch_data.obs
         act = batch_data.act
         advantage: torch.Tensor = batch_data.gae_adv
@@ -151,7 +151,7 @@ class PPO(OnPolicyAgent):
 
         return loss_pi_info
 
-    def _calc_v_loss(self, batch_data: BufferData) -> torch.Tensor:
+    def _calc_critic_loss(self, batch_data: BufferData) -> torch.Tensor:
         obs = batch_data.obs
         ret = batch_data.discount_ret
         state_value = self.critic.forward(obs).reshape(ret.shape)
