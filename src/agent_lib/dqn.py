@@ -41,7 +41,7 @@ class DQN(OffPolicyAgent):
         self.policy_optimizer = torch.optim.AdamW(
             self.policy.parameters(), lr=self.policy_lr
         )
-        self.set_soft_update(
+        self._set_soft_update(
             [self.target_q], [self.policy], tau=configure.agent_config.tau
         )
 
@@ -56,7 +56,7 @@ class DQN(OffPolicyAgent):
 
         return action
 
-    def learn(self, batch_data: BufferData) -> None:
+    def _calc_critic_loss(self, batch_data: BufferData) -> torch.Tensor:
         with torch.no_grad():
             obs = batch_data.obs
             act = batch_data.act
@@ -66,6 +66,11 @@ class DQN(OffPolicyAgent):
 
         q = self.policy.forward(obs).gather(dim=-1, index=act.long().unsqueeze(1))
         loss = nn.functional.mse_loss(q, target_q).mean()
+
+        return loss
+
+    def learn(self, batch_data: BufferData) -> None:
+        loss = self._calc_critic_loss(batch_data)
         self.logger.store(Loss=loss.cpu().item())
 
         self.policy_optimizer.zero_grad()

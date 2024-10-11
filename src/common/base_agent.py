@@ -44,9 +44,6 @@ class BaseAgent(ABC, nn.Module):
         super().__init__()
         self.observation_space = observation_space
         self.action_space = action_space
-        self.tau: float = None
-        self.target_net_list: List[nn.Module] = []
-        self.current_net_list: List[nn.Module] = []
         self.logger = logger
         if device is None:
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -69,26 +66,11 @@ class BaseAgent(ABC, nn.Module):
         """
         pass
 
-    def set_soft_update(
-        self,
-        target_net_list: List[nn.Module],
-        current_net_list: List[nn.Module],
-        tau: float = 0.005,
-    ):
-        self.target_net_list = target_net_list
-        self.current_net_list = current_net_list
-        self.tau = tau
+    def _calc_actor_loss(self, batch_data: BufferData) -> torch.Tensor:
+        raise NotImplementedError
 
-    def soft_update(self):
-        if self.tau is None:
-            raise ValueError("The tau is not set!")
-        if len(self.target_net_list) != len(self.current_net_list):
-            raise ValueError("The target and current network list should be the same!")
-        if len(self.target_net_list) < 1:
-            raise ValueError("The target network list is empty!")
-        for target_net, current_net in zip(self.target_net_list, self.current_net_list):
-            for tar, cur in zip(target_net.parameters(), current_net.parameters()):
-                tar.data.copy_(cur.data * self.tau + tar.data * (1.0 - self.tau))
+    def _calc_critic_loss(self, batch_data: BufferData) -> torch.Tensor:
+        raise NotImplementedError
 
 
 class OffPolicyAgent(BaseAgent):
@@ -100,6 +82,34 @@ class OffPolicyAgent(BaseAgent):
         logger: EpochLogger = None,
     ) -> None:
         super().__init__(observation_space, action_space, device, logger)
+        self.tau: float = None
+        self.target_net_list: List[nn.Module] = []
+        self.current_net_list: List[nn.Module] = []
+        self.use_soft_update = False
+
+    def _set_soft_update(
+        self,
+        target_net_list: List[nn.Module],
+        current_net_list: List[nn.Module],
+        tau: float = 0.005,
+    ):
+        self.target_net_list = target_net_list
+        self.current_net_list = current_net_list
+        self.tau = tau
+        self.use_soft_update = True
+
+    def soft_update(self):
+        if not self.use_soft_update:
+            return
+        if self.tau is None:
+            raise ValueError("The tau is not set!")
+        if len(self.target_net_list) != len(self.current_net_list):
+            raise ValueError("The target and current network list should be the same!")
+        if len(self.target_net_list) < 1:
+            raise ValueError("The target network list is empty!")
+        for target_net, current_net in zip(self.target_net_list, self.current_net_list):
+            for tar, cur in zip(target_net.parameters(), current_net.parameters()):
+                tar.data.copy_(cur.data * self.tau + tar.data * (1.0 - self.tau))
 
 
 class OnPolicyAgent(BaseAgent):

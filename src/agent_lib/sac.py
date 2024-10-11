@@ -25,9 +25,7 @@ class SAC(OffPolicyAgent):
         super().__init__(observation_space, action_space, configure.device, logger)
 
         self.obs_dim = observation_space.shape[0]
-        if isinstance(action_space, Discrete):
-            self.act_dim = action_space.n
-        elif isinstance(action_space, Box):
+        if isinstance(action_space, Box):
             self.act_dim = action_space.shape[0]
         else:
             raise ValueError("ONLY Discrete or Box action space is supported")
@@ -54,7 +52,15 @@ class SAC(OffPolicyAgent):
         )
 
     def act(self, obs) -> np.ndarray:
-        pass
+        act, _ = self.policy.forward(obs, with_logprob=False)
+
+        return act.detach().cpu().numpy()
 
     def learn(self, batch_data: BufferData) -> None:
+        pass
+
+    def _calc_actor_loss(self, batch_data: BufferData) -> torch.Tensor:
+        pass
+
+    def _calc_critic_loss(self, batch_data: BufferData) -> torch.Tensor:
         pass
