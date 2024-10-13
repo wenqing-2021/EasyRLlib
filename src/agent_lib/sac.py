@@ -30,6 +30,8 @@ class SAC(OffPolicyAgent):
         else:
             raise ValueError("ONLY Discrete or Box action space is supported")
 
+        self.gamma = configure.agent_config.gamma
+
         # creat actor and critic
         self.policy = MLPSquashedGaussianActor(
             self.obs_dim,
@@ -51,6 +53,14 @@ class SAC(OffPolicyAgent):
             self.critic.parameters(), lr=configure.agent_config.policy_lr
         )
 
+        self.alpha_log = torch.tensor(
+            (-1,), dtype=torch.float32, requires_grad=True, device=self.device
+        )  # trainable var
+        self.alpha_optim = torch.optim.Adam(
+            (self.alpha_log,), lr=configure.agent_config.alpha_lr
+        )
+        self.target_entropy = np.log(self.act_dim)
+
     def act(self, obs) -> np.ndarray:
         act, _ = self.policy.forward(obs, with_logprob=False)
 
@@ -63,4 +73,26 @@ class SAC(OffPolicyAgent):
         pass
 
     def _calc_critic_loss(self, batch_data: BufferData) -> torch.Tensor:
-        pass
+        obs = batch_data.obs
+        act = batch_data.act
+        next_obs = batch_data.next_obs
+        rew = batch_data.rew
+        done = batch_data.done
+
+        q_values = self.critic.forward(obs, act)
+
+        with torch.no_grad():
+            # Target actions come from *current* policy
+            next_act, logp_n_act = self.policy.forward(next_obs)
+            alpha = self.alpha_log.exp()
+            # Target Q-values
+            next_q_values = self.critic_target.forward(next_obs, next_act)
+            next_q = torch.min(next_q_values)
+            target_q = rew + self.gamma * (1 - done) * (next_q - alpha * logp_n_act)
+
+        # MSE loss against Bellman backup
+        loss_q = self.smoothL1(q_values, target_q).mean(dim=1)
+
+        # Useful info for logging
+
+        return loss_q

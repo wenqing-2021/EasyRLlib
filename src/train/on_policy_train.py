@@ -65,13 +65,18 @@ class OnPolicyTrain(BaseTrainer):
         for steps in range(max_steps):
             act, log_pi = agent.evaluate(obs)
             state_v = agent.calc_state_value(obs)
-            next_obs, rew, done, _, info = self.env.step(act)
+            next_obs, rew, done, truncated, info = self.env.step(act)
             buffer.store(obs, act, next_obs, rew, done, log_pi, state_v)
             obs = next_obs
             self._ep_ret += rew
             self._ep_len += 1
 
-            if done or (steps + 1) == max_ep_steps or (steps + 1) == max_steps:
+            if (
+                done
+                or truncated
+                or (steps + 1) == max_ep_steps
+                or (steps + 1) == max_steps
+            ):
                 if done:
                     last_state_v = 0
                 else:

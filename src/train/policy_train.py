@@ -72,9 +72,9 @@ class BaseTrainer(ABC):
         render_times = 10
         while render_times > 0:
             act = agent.act(obs)
-            next_obs, rew, done, _, info = render_env.step(act)
+            next_obs, rew, done, truncted, info = render_env.step(act)
             obs = next_obs
-            if done:
+            if done or truncted:
                 obs, _ = render_env.reset()
                 render_times -= 1
 
