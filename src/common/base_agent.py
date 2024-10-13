@@ -44,6 +44,8 @@ class BaseAgent(ABC, nn.Module):
         super().__init__()
         self.observation_space = observation_space
         self.action_space = action_space
+        self.smoothL1 = torch.nn.SmoothL1Loss(reduction="none")
+        self.mse = torch.nn.MSELoss(reduction="none")
         self.logger = logger
         if device is None:
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -83,9 +85,9 @@ class OffPolicyAgent(BaseAgent):
     ) -> None:
         super().__init__(observation_space, action_space, device, logger)
         self.tau: float = None
+        self.use_soft_update: bool = False
         self.target_net_list: List[nn.Module] = []
         self.current_net_list: List[nn.Module] = []
-        self.use_soft_update = False
 
     def _set_soft_update(
         self,

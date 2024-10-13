@@ -155,7 +155,7 @@ class PPO(OnPolicyAgent):
         obs = batch_data.obs
         ret = batch_data.discount_ret
         state_value = self.critic.forward(obs).reshape(ret.shape)
-        loss_v = 0.5 * nn.functional.mse_loss(state_value, ret).mean()
+        loss_v = 0.5 * self.smoothL1(state_value, ret).mean()
 
         # log info
         loss_v_info = {"LossV": loss_v}

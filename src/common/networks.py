@@ -1,11 +1,8 @@
 import numpy as np
-import scipy.signal
-from gymnasium.spaces import Box, Discrete
 import torch
 import torch.nn as nn
 from torch.distributions.normal import Normal
 from torch.distributions.categorical import Categorical
-from typing import Optional
 from abc import ABC, abstractmethod
 
 LOG_STD_MIN = -20
@@ -154,10 +151,18 @@ class MLPCritic(Critic):
 
 
 class QCritic(Critic):
-    def __init__(self, obs_dim, act_dim, hidden_sizes, activation):
+    def __init__(self, obs_dim, act_dim, hidden_sizes, activation, q_num=2):
         super().__init__(obs_dim, act_dim)
-        self.net = mlp([obs_dim + act_dim] + list(hidden_sizes) + [1], activation)
+        self.net_encode = mlp([obs_dim + act_dim] + list(hidden_sizes), activation)
+        self.q_decode_list = []
+        for q_i in range(q_num):
+            q_decode = mlp([hidden_sizes[-1], 1], activation=nn.Identity)
+            self.q_decode_list.append(q_decode)
+            setattr(self, f"q_decode_{q_i}", q_decode)
 
     def forward(self, obs, act) -> torch.Tensor:
-        q = self.net(torch.cat([obs, act], dim=-1))
-        return torch.squeeze(q, -1)  # Critical to ensure q has right shape.
+        encode_obs = self.net_encode(torch.cat([obs, act], dim=-1))
+        q_values = torch.cat(
+            [q_decode(encode_obs) for q_decode in self.q_decode_list], dim=-1
+        )
+        return q_values  # Critical to ensure q has right shape.

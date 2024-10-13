@@ -71,7 +71,8 @@ has_pkg "$pip_list" 'gymnasium'
 has_gymnasium=$?
 if [[ $has_gymnasium == 0 ]]; then
     echo "start installing gymnasium"
-    pip3 install gymnasium
+    apt-get install swig
+    pip3 install gymnasium[all]
 else
     echo "has installed gymnasium"
 fi
