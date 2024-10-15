@@ -8,10 +8,10 @@ from src.utils.logx import EpochLogger
 
 import gymnasium as gym
 from gymnasium.spaces import Box, Discrete
-from typing import Tuple
 import numpy as np
 import torch
-from torch import nn
+
+torch.autograd.set_detect_anomaly(True)
 
 
 class SAC(OffPolicyAgent):
@@ -62,37 +62,65 @@ class SAC(OffPolicyAgent):
         self.target_entropy = np.log(self.act_dim)
 
     def act(self, obs) -> np.ndarray:
+        if not isinstance(obs, torch.Tensor):
+            obs = torch.tensor(obs, dtype=torch.float32).to(self.device)
         act, _ = self.policy.forward(obs, with_logprob=False)
 
         return act.detach().cpu().numpy()
 
     def learn(self, batch_data: BufferData) -> None:
-        pass
+        loss_critic = self._calc_critic_loss(batch_data)
+        self.critic_optimizer.zero_grad()
+        loss_critic.backward()
+        mpi_avg_grads(self.critic)
+        self.critic_optimizer.step()
+
+        loss_pi = self._calc_actor_loss(batch_data)
+        self.policy_optimizer.zero_grad()
+        loss_pi.backward()
+        mpi_avg_grads(self.policy)
+        self.policy_optimizer.step()
 
     def _calc_actor_loss(self, batch_data: BufferData) -> torch.Tensor:
-        pass
+        obs = batch_data.obs
+
+        act, logp_act = self.policy.forward(obs)
+        q_values = self.critic.forward(obs, act)
+        min_q = torch.min(q_values, dim=-1, keepdim=True)[0]  # [batch_size, 1]
+        # update alpha
+        loss_alpha = (self.alpha_log * (self.target_entropy - logp_act).detach()).mean()
+        self.alpha_optim.zero_grad()
+        loss_alpha.backward()
+        mpi_avg_grads(self.alpha_log)
+        self.alpha_optim.step()
+
+        alpha = self.alpha_log.exp().detach()
+        loss_pi = (alpha * logp_act - min_q).mean()
+
+        return loss_pi
 
     def _calc_critic_loss(self, batch_data: BufferData) -> torch.Tensor:
-        obs = batch_data.obs
+        obs = batch_data.obs  # [batch_size, obs_dim]
         act = batch_data.act
         next_obs = batch_data.next_obs
-        rew = batch_data.rew
-        done = batch_data.done
+        rew = batch_data.rew  # [batch_size, 1]
+        done = batch_data.done  # [batch_size, 1]
 
         q_values = self.critic.forward(obs, act)
 
         with torch.no_grad():
             # Target actions come from *current* policy
-            next_act, logp_n_act = self.policy.forward(next_obs)
+            next_act, logp_act = self.policy.forward(next_obs)
             alpha = self.alpha_log.exp()
             # Target Q-values
-            next_q_values = self.critic_target.forward(next_obs, next_act)
-            next_q = torch.min(next_q_values)
-            target_q = rew + self.gamma * (1 - done) * (next_q - alpha * logp_n_act)
+            next_q_values = self.critic_target.forward(
+                next_obs, next_act
+            )  # [batch_size, q_num]
+            next_q = torch.min(next_q_values, dim=-1, keepdim=True)[0]
+            target_q = rew + self.gamma * (1 - done) * (next_q - alpha * logp_act)
 
         # MSE loss against Bellman backup
-        loss_q = self.smoothL1(q_values, target_q).mean(dim=1)
+        target_q = target_q.expand_as(q_values)  # [batch_size, q_num]
+        loss_q = self.smoothL1(q_values, target_q).mean(dim=1)  # [batch_size]
 
-        # Useful info for logging
-
-        return loss_q
+        return loss_q.mean()

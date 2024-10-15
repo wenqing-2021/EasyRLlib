@@ -43,22 +43,28 @@ class OffPolicyTrain(BaseTrainer):
             / num_procs()
         )
         obs = self._init_env()
-        for steps in range(local_steps_per_epoch):
+        for steps in range(1, local_steps_per_epoch + 1):
             act = agent.act(obs)
             next_obs, rew, done, truncted, info = self.env.step(act)
-            if steps % self.update_every == 0:
-                batch_data = buffer.get()
-                agent.learn(batch_data)
-            if steps % self.soft_update_every == 0:
-                agent.soft_update()
+
+            # store the data
             buffer.store(obs, act, next_obs, rew, done)
-            if done or truncted or steps == local_steps_per_epoch - 1:
+
+            # update the episode information
+            if done or truncted or steps == local_steps_per_epoch:
                 self.logger.store(EpRet=self._ep_ret, EpLen=self._ep_len)
                 obs = self._init_env()
             else:
                 obs = next_obs
                 self._ep_ret += rew
                 self._ep_len += 1
+
+            # update the agent
+            if steps % self.update_every == 0:
+                batch_data = buffer.get()
+                agent.learn(batch_data)
+            if steps % self.soft_update_every == 0:
+                agent.soft_update()
 
     def train(self, agent) -> None:
         self._log_agent_param(agent)

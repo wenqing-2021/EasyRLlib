@@ -3,7 +3,7 @@ import joblib
 import os
 import os.path as osp
 import torch
-import EpochLogger
+from src.utils.logx import EpochLogger
 
 
 def load_policy_and_env(fpath, itr="last", deterministic=False):

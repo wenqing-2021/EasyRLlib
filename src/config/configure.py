@@ -80,6 +80,11 @@ class PPOConfig(AgentConfig):
 
 
 @dataclass
+class SACConfig(AgentConfig):
+    alpha_lr: float = 3e-4
+
+
+@dataclass
 class RunConfig(BaseConfig):
     env_config: EnvConfig = None
     train_config: TrainConfig = None
@@ -90,7 +95,7 @@ class RunConfig(BaseConfig):
     exp_name: str = None
 
 
-AGENT_MAP = {"DQN": DQNConfig, "PPO": PPOConfig}
+AGENT_MAP = {"DQN": DQNConfig, "PPO": PPOConfig, "SAC": SACConfig}
 
 ACTIVATION_MAP = {
     "Tanh": nn.Tanh,

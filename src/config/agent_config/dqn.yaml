@@ -1,7 +1,7 @@
 agent_name: "DQN" # name of the agent
 
 hidden_sizes: [64, 64]
-activation_name: "Tanh" 
+activation_name: "Tanh" # ["ReLU", "Tanh"]
 policy_lr: 0.001
 gamma: 0.99
 epsilon: 0.1 # epsilon greedy exploration
