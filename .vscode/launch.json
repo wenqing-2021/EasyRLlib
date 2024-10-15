@@ -14,7 +14,7 @@
             "cwd": "${workspaceFolder}",
             "args": [
                 "--config_path",
-                "/home/EasyRLlib/experiment/ppo_cartpole/run_config.yaml"
+                "/home/EasyRLlib/experiment/sac_BipedalWalker-v3/run_config.yaml"
             ]
         },
     ]

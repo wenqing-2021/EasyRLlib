@@ -62,21 +62,18 @@ class OnPolicyTrain(BaseTrainer):
         max_ep_steps = self.configure.train_config.on_policy_train_config.max_ep_len
 
         obs = self._init_env()
-        for steps in range(max_steps):
+        for steps in range(1, max_steps + 1):
             act, log_pi = agent.evaluate(obs)
             state_v = agent.calc_state_value(obs)
             next_obs, rew, done, truncated, info = self.env.step(act)
+            # store the data
             buffer.store(obs, act, next_obs, rew, done, log_pi, state_v)
+
+            # update the episode information
             obs = next_obs
             self._ep_ret += rew
             self._ep_len += 1
-
-            if (
-                done
-                or truncated
-                or (steps + 1) == max_ep_steps
-                or (steps + 1) == max_steps
-            ):
+            if done or truncated or steps == max_ep_steps or steps == max_steps:
                 if done:
                     last_state_v = 0
                 else:
@@ -89,4 +86,5 @@ class OnPolicyTrain(BaseTrainer):
                 self.logger.store(EpRet=self._ep_ret, EpLen=self._ep_len)
                 obs = self._init_env()
 
+        # update the agent
         agent.learn(buffer.get())

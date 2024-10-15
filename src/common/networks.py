@@ -120,11 +120,15 @@ class MLPSquashedGaussianActor(Actor):
         pi_distribution = self._distribution(obs)
         pi_action = pi_distribution.rsample()
         if with_logprob:
-            log_pi = self._log_prob_from_distribution(pi_distribution, pi_action)
+            logp_pi = self._log_prob_from_distribution(
+                pi_distribution, pi_action
+            ).unsqueeze(
+                -1
+            )  # [batch_size, 1]
         else:
             logp_pi = None
 
-        pi_action_tanh = torch.tanh(pi_action)
+        pi_action_tanh = torch.tanh(pi_action)  # [batch_size, act_dim]
 
         return pi_action_tanh, logp_pi
 
@@ -165,4 +169,4 @@ class QCritic(Critic):
         q_values = torch.cat(
             [q_decode(encode_obs) for q_decode in self.q_decode_list], dim=-1
         )
-        return q_values  # Critical to ensure q has right shape.
+        return q_values  # [batch_size, q_num]
