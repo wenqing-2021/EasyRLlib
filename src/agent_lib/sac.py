@@ -1,5 +1,5 @@
 from copy import deepcopy
-from src.common.base_agent import OffPolicyAgent
+from src.agent_lib.base_agent import OffPolicyAgent
 from src.common.buffer import BufferData
 from src.common.networks import MLPSquashedGaussianActor, QCritic
 from src.config.configure import RunConfig
@@ -22,19 +22,22 @@ class SAC(OffPolicyAgent):
         configure: RunConfig = None,
         logger: EpochLogger = None,
     ) -> OffPolicyAgent:
-        super().__init__(observation_space, action_space, configure.device, logger)
-        if isinstance(action_space, Box):
-            return SACC(observation_space, action_space, configure, logger)
-        elif isinstance(action_space, Discrete):
-            return SACD(observation_space, action_space, configure, logger)
-        else:
-            raise ValueError("ONLY Discrete or Box action space is supported")
+        super().__init__(observation_space, action_space, configure, logger)
 
     def act(self, obs) -> np.ndarray:
         raise NotImplementedError
 
     def learn(self, batch_data: BufferData) -> None:
         raise NotImplementedError
+
+    @classmethod
+    def make_agent(cls, observation_space, action_space, configure, logger):
+        if isinstance(action_space, Box):
+            return SACC(observation_space, action_space, configure, logger)
+        elif isinstance(action_space, Discrete):
+            return SACD(observation_space, action_space, configure, logger)
+        else:
+            raise ValueError("ONLY Discrete or Box action space is supported")
 
 
 class SACC(OffPolicyAgent):
@@ -45,8 +48,7 @@ class SACC(OffPolicyAgent):
         configure: RunConfig = None,
         logger: EpochLogger = None,
     ) -> None:
-        super().__init__(observation_space, action_space, configure.device, logger)
-
+        super().__init__(observation_space, action_space, configure, logger)
         self.obs_dim = observation_space.shape[0]
         if isinstance(action_space, Box):
             self.act_dim = action_space.shape[0]
@@ -162,19 +164,4 @@ class SACD(SAC):
         self.target_entropy = configure.agent_config.target_entropy
 
     def _calc_actor_loss(self, batch_data: BufferData) -> torch.Tensor:
-        obs = batch_data.obs
-
-        act, logp_act = self.policy.forward(obs)
-        q_values = self.critic.forward(obs, act)
-        min_q = torch.min(q_values, dim=-1, keepdim=True)[0]  # [batch_size, 1]
-        # update alpha
-        loss_alpha = (self.alpha_log * (self.target_entropy - logp_act).detach()).mean()
-        self.alpha_optim.zero_grad()
-        loss_alpha.backward()
-        mpi_avg_grads(self.alpha_log)
-        self.alpha_optim.step()
-
-        alpha = self.alpha_log.exp().detach()
-        loss_pi = (alpha * logp_act - min_q).mean()
-
-        return loss_pi
+        pass

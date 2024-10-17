@@ -2,7 +2,7 @@ import numpy as np
 import gymnasium as gym
 from src.config.configure import RunConfig
 from src.utils.mpi_tools import num_procs
-from src.common.base_agent import OnPolicyAgent
+from src.agent_lib.base_agent import OnPolicyAgent
 from src.common.buffer import OnPolicyBuffer
 from src.train.policy_train import BaseTrainer
 

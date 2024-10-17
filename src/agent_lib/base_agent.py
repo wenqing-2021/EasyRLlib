@@ -15,6 +15,7 @@ import gymnasium as gym
 from gymnasium.spaces import Box, Discrete
 from src.common.buffer import BufferData
 from src.utils.logx import EpochLogger
+from src.config.configure import RunConfig
 from typing import List, Union, Tuple
 
 
@@ -30,7 +31,7 @@ class BaseAgent(ABC, nn.Module):
         self,
         observation_space: gym.Space,
         action_space: gym.Space,
-        device: str = None,
+        config: RunConfig = None,
         logger: EpochLogger = None,
     ) -> None:
         """
@@ -47,10 +48,20 @@ class BaseAgent(ABC, nn.Module):
         self.smoothL1 = torch.nn.SmoothL1Loss(reduction="none")
         self.mse = torch.nn.MSELoss(reduction="none")
         self.logger = logger
-        if device is None:
+        if config.device is None:
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         else:
-            self.device = torch.device(device)
+            self.device = torch.device(config.device)
+
+    @classmethod
+    def make_agent(
+        cls,
+        observation_space: gym.Space,
+        action_space: gym.Space,
+        config: RunConfig = None,
+        logger: EpochLogger = None,
+    ):
+        return cls(observation_space, action_space, config, logger)
 
     @abstractmethod
     def act(self, obs) -> np.ndarray:
@@ -139,3 +150,28 @@ class OnPolicyAgent(BaseAgent):
         return {*}
         """
         pass
+
+
+class AgentFactory:
+    agent_map = {}
+
+    @classmethod
+    def register_agent(cls, agent_name: str, agent_class: BaseAgent):
+        cls.agent_map[agent_name] = agent_class
+
+    @classmethod
+    def make_agent(
+        cls,
+        agent_name: str,
+        env: gym.Env,
+        configure: RunConfig,
+        logger: EpochLogger,
+    ) -> BaseAgent:
+        if len(cls.agent_map.keys()) > 0 and agent_name not in cls.agent_map.keys():
+            raise ValueError(f"Agent {agent_name} is not registered!")
+        agent: BaseAgent = cls.agent_map[agent_name]
+        target_agent = agent.make_agent(
+            env.observation_space, env.action_space, configure, logger
+        )
+
+        return target_agent

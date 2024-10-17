@@ -1,7 +1,8 @@
 from src.train.policy_train import BaseTrainer
 from src.config.configure import RunConfig, load_config
 from src.utils.mpi_tools import mpi_fork
-from src import agent_lib
+from src.agent_lib import AgentFactory
+from src.train import TrainerFactory
 import torch
 import argparse
 import gymnasium as gym
@@ -17,15 +18,9 @@ def make_env(env_name: str):
 def make_agent(
     agent_name: str = None, env: gym.Env = None, run_config: RunConfig = None
 ):
-    if agent_name not in agent_lib.AGENT_MAP.keys():
-        raise ValueError(
-            f"The defined Agent not supported. Please load agent from {list(agent_lib.AGENT_MAP.keys())} "
-        )
-    trainer: BaseTrainer = agent_lib.TRAINER_TYPE[agent_name](run_config, env)
+    trainer: BaseTrainer = TrainerFactory.make_trainer(agent_name, run_config, env)
 
-    agent = agent_lib.AGENT_MAP[agent_name](
-        env.observation_space, env.action_space, run_config, trainer.logger
-    )
+    agent = AgentFactory.make_agent(agent_name, env, run_config, trainer.logger)
 
     return agent, trainer
 

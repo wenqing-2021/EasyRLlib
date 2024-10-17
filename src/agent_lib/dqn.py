@@ -1,5 +1,5 @@
 from src.common.networks import QNet
-from src.common.base_agent import OffPolicyAgent
+from src.agent_lib.base_agent import OffPolicyAgent
 from src.common.buffer import BufferData
 from src.config.configure import RunConfig
 from src.utils.mpi_pytorch import mpi_avg_grads
@@ -20,7 +20,7 @@ class DQN(OffPolicyAgent):
         configure: RunConfig = None,
         logger: EpochLogger = None,
     ) -> None:
-        super().__init__(observation_space, action_space, configure.device, logger)
+        super().__init__(observation_space, action_space, configure, logger)
         if not isinstance(action_space, Discrete):
             raise ValueError("ONLY Discrete action space is supported")
 

@@ -1,4 +1,4 @@
-from src.common.base_agent import OnPolicyAgent
+from src.agent_lib.base_agent import OnPolicyAgent
 from src.common.buffer import BufferData
 from src.common.networks import MLPCategoricalActor, MLPGaussianActor, MLPCritic
 from src.config.configure import RunConfig
@@ -21,7 +21,7 @@ class PPO(OnPolicyAgent):
         configure: RunConfig = None,
         logger: EpochLogger = None,
     ) -> None:
-        super().__init__(observation_space, action_space, configure.device, logger)
+        super().__init__(observation_space, action_space, configure, logger)
         self.obs_dim = observation_space.shape[0]
         if isinstance(action_space, Discrete):
             self.act_dim = action_space.n
