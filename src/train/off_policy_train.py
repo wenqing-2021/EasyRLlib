@@ -1,7 +1,7 @@
 from src.train.policy_train import BaseTrainer
 from src.config.configure import RunConfig
 from src.utils.mpi_tools import num_procs
-from src.common.base_agent import OffPolicyAgent
+from src.agent_lib.base_agent import OffPolicyAgent
 from src.common.buffer import OffPolicyBuffer
 
 import numpy as np

@@ -7,7 +7,7 @@ from src.config.configure import RunConfig
 from src.utils.logx import EpochLogger
 from src.utils.mpi_pytorch import setup_pytorch_for_mpi, sync_params
 from src.utils.mpi_tools import proc_id
-from src.common.base_agent import BaseAgent
+from src.agent_lib.base_agent import BaseAgent
 from src.common.networks import count_vars
 
 
@@ -79,3 +79,17 @@ class BaseTrainer(ABC):
                 render_times -= 1
 
         render_env.close()
+
+
+class TrainerFactory:
+    trainer_dict = {}
+
+    @classmethod
+    def register_trainer(cls, agent_name: str, trainer_type: BaseTrainer) -> None:
+        cls.trainer_dict[agent_name] = trainer_type
+
+    @classmethod
+    def make_trainer(
+        cls, agent_name: str, configure: RunConfig, env: gym.Env
+    ) -> BaseTrainer:
+        return cls.trainer_dict[agent_name](configure, env)
