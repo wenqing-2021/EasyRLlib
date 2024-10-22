@@ -70,6 +70,7 @@ class AgentConfig(BaseConfig):
 class DQNConfig(AgentConfig):
     epsilon: float = 0.1  # epsilon greedy exploration
     tau: float = 0.005
+    q_num: int = 2
 
 
 @dataclass

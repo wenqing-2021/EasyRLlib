@@ -22,13 +22,27 @@ def count_vars(module: nn.Module):
 
 
 class QNet(nn.Module):
-    def __init__(self, obs_dim, act_dim, hidden_sizes, activation):
+    def __init__(self, obs_dim, act_dim, hidden_sizes, activation, q_num=1):
         super().__init__()
-        self.q_net = mlp([obs_dim] + list(hidden_sizes) + [act_dim], activation)
+        self.net_encode = mlp([obs_dim] + list(hidden_sizes), activation)
+        self.q_num = q_num
+        self.act_dim = act_dim
+        self.q_decode_list = []
+        for q_i in range(q_num):
+            q_decode = mlp([hidden_sizes[-1], act_dim], activation)
+            self.q_decode_list.append(q_decode)
+            setattr(self, f"q_decode_{q_i}", q_decode)
 
     def forward(self, obs):
-        q = self.q_net(obs)
-        return torch.squeeze(q, -1)
+        encode_feat = self.net_encode(obs)
+        decode_q = torch.cat(
+            [
+                q_decode(encode_feat).reshape(-1, self.act_dim).unsqueeze(0)
+                for q_decode in self.q_decode_list
+            ],
+            dim=0,
+        )
+        return decode_q
 
 
 class Actor(ABC, nn.Module):
@@ -159,12 +173,13 @@ class QCritic(Critic):
         super().__init__(obs_dim, act_dim)
         self.net_encode = mlp([obs_dim + act_dim] + list(hidden_sizes), activation)
         self.q_decode_list = []
+        self.q_num = q_num
         for q_i in range(q_num):
             q_decode = mlp([hidden_sizes[-1], 1], activation=nn.Identity)
             self.q_decode_list.append(q_decode)
             setattr(self, f"q_decode_{q_i}", q_decode)
 
-    def forward(self, obs, act) -> torch.Tensor:
+    def forward(self, obs: torch.Tensor, act: torch.Tensor) -> torch.Tensor:
         encode_obs = self.net_encode(torch.cat([obs, act], dim=-1))
         q_values = torch.cat(
             [q_decode(encode_obs) for q_decode in self.q_decode_list], dim=-1
