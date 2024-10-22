@@ -83,6 +83,7 @@ class PPOConfig(AgentConfig):
 @dataclass
 class SACConfig(AgentConfig):
     alpha_lr: float = 3e-4
+    q_num: int = 2  # for discrete action space
 
 
 @dataclass

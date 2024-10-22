@@ -1,7 +1,12 @@
 from copy import deepcopy
 from src.agent_lib.base_agent import OffPolicyAgent
 from src.common.buffer import BufferData
-from src.common.networks import MLPSquashedGaussianActor, QCritic
+from src.common.networks import (
+    MLPSquashedGaussianActor,
+    QCritic,
+    QNet,
+    MLPCategoricalActor,
+)
 from src.config.configure import RunConfig
 from src.utils.mpi_pytorch import mpi_avg_grads, mpi_avg
 from src.utils.logx import EpochLogger
@@ -10,8 +15,6 @@ import gymnasium as gym
 from gymnasium.spaces import Box, Discrete
 import numpy as np
 import torch
-
-torch.autograd.set_detect_anomaly(True)
 
 
 class SAC(OffPolicyAgent):
@@ -40,7 +43,11 @@ class SAC(OffPolicyAgent):
             raise ValueError("ONLY Discrete or Box action space is supported")
 
 
-class SACC(OffPolicyAgent):
+class SACC(SAC):
+    """
+    Soft Actor-Critic with Continuous Action Space
+    """
+
     def __init__(
         self,
         observation_space: gym.Space,
@@ -152,6 +159,10 @@ class SACC(OffPolicyAgent):
 
 
 class SACD(SAC):
+    """
+    Soft Actor-Critic with Discrete Action Space
+    """
+
     def __init__(
         self,
         observation_space: gym.Space,
@@ -160,8 +171,50 @@ class SACD(SAC):
         logger: EpochLogger = None,
     ) -> None:
         super().__init__(observation_space, action_space, configure, logger)
+        self.obs_dim = observation_space.shape[0]
+        if isinstance(action_space, Discrete):
+            self.act_dim = action_space.n
+        else:
+            raise ValueError("ONLY Discrete or Box action space is supported")
+        # create policy and critic
+        self.q_num = configure.agent_config.q_num
+        self.policy = MLPCategoricalActor(
+            self.obs_dim,
+            self.act_dim,
+            configure.agent_config.hidden_sizes,
+            configure.agent_config.activation,
+        ).to(self.device)
+        self.critic = QNet(
+            self.obs_dim,
+            self.act_dim,
+            configure.agent_config.hidden_sizes,
+            configure.agent_config.activation,
+            q_num=self.q_num,
+        ).to(self.device)
+        self.critic_target = deepcopy(self.critic)
+        self.target_entropy = -self.act_dim
+        self.log_alpha = torch.tensor([0.0], requires_grad=True)
+        self.alpha = self.log_alpha.exp().detach()
 
-        self.target_entropy = configure.agent_config.target_entropy
+        # create optimizers
+        self.policy_optimizer = torch.optim.AdamW(
+            self.policy.parameters(), lr=configure.agent_config.policy_lr
+        )
+        self.critic_optimizer = torch.optim.AdamW(
+            self.critic.parameters(), lr=configure.agent_config.critic_lr
+        )
+        self.alpha_optimizer = torch.optim.AdamW(
+            params=[self.log_alpha], lr=configure.agent_config.alpha_lr
+        )
 
     def _calc_actor_loss(self, batch_data: BufferData) -> torch.Tensor:
+        pass
+
+    def _calc_critic_loss(self, batch_data: BufferData) -> torch.Tensor:
+        pass
+
+    def act(self, obs) -> np.ndarray:
+        pass
+
+    def learn(self, batch_data: BufferData) -> None:
         pass
