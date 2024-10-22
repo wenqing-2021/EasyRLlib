@@ -31,11 +31,13 @@ class DQN(OffPolicyAgent):
         self.activation = configure.agent_config.activation
         self.epsilon = configure.agent_config.epsilon
         self.gamma = configure.agent_config.gamma
+        self.q_num = configure.agent_config.q_num
         self.policy = QNet(
             obs_dim=self.obs_dim,
             act_dim=self.act_dim,
             hidden_sizes=self.hidden_sizes,
             activation=self.activation,
+            q_num=self.q_num,
         ).to(self.device)
         self.target_q = copy.deepcopy(self.policy)
         self.policy_optimizer = torch.optim.AdamW(
@@ -49,8 +51,9 @@ class DQN(OffPolicyAgent):
         if not isinstance(obs, torch.Tensor):
             obs = torch.as_tensor(obs, dtype=torch.float32, device=self.device)
         if np.random.rand() >= self.epsilon:
-            action = self.policy.forward(obs)
-            action = action.argmax(dim=-1, keepdim=False).cpu().numpy()
+            action = self.policy.forward(obs).squeeze()
+            mean_action = action.mean(dim=0, keepdim=False)
+            action = mean_action.argmax(dim=-1, keepdim=False).cpu().numpy()
         else:
             action = np.random.randint(0, self.act_dim)
 
@@ -61,11 +64,19 @@ class DQN(OffPolicyAgent):
             obs = batch_data.obs
             act = batch_data.act
             next_obs = batch_data.next_obs
-            next_q = self.target_q.forward(next_obs).max(dim=-1, keepdim=True)[0]
+            next_q_list = self.target_q.forward(
+                next_obs
+            )  # [q_num, batch_size, act_dim]
+            min_next_q = torch.min(next_q_list, dim=0)[0]
+            next_q = min_next_q.max(dim=-1, keepdim=True)[0]
             target_q = batch_data.rew + self.gamma * (1 - batch_data.done) * next_q
-
-        q = self.policy.forward(obs).gather(dim=-1, index=act.long().unsqueeze(1))
-        loss = nn.functional.mse_loss(q, target_q).mean()
+        act_index = (
+            act.long().unsqueeze(1).unsqueeze(0).expand(self.q_num, -1, -1)
+        )  # [q_num, batch_size, 1]
+        q = self.policy.forward(obs).gather(dim=-1, index=act_index)
+        loss = 0
+        for i in range(self.q_num):
+            loss += self.mse(q[i], target_q).mean()
 
         return loss
 
