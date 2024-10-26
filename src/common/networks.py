@@ -60,15 +60,31 @@ class Actor(ABC, nn.Module):
     def _log_prob_from_distribution(self, pi, act):
         pass
 
-    def forward(self, obs, act=None):
-        # Produce action distributions for given observations, and
-        # optionally compute the log likelihood of given actions under
-        # those distributions.
+    def forward(self, obs, act=None, with_logprob=True, with_noise=False):
+        """
+        get the distribution of the policy and sample from it
+
+        input:
+            obs: torch.Tensor, the observation
+            act: torch.Tensor, the action
+            with_logprob: bool, whether to return the log probability of the action
+            with_noise: bool, whether to sample with noise
+
+        return: pi, logp_a[if not with_logp, NONE], action
+        """
         pi = self._distribution(obs)
         logp_a = None
-        if act is not None:
-            logp_a = self._log_prob_from_distribution(pi, act)
-        return pi, logp_a
+        if with_noise:
+            pi_action = pi.rsample()
+        else:
+            pi_action = pi.sample()
+        if with_logprob:
+            if act is not None:
+                logp_a = self._log_prob_from_distribution(pi, act).unsqueeze(-1)
+            else:
+                logp_a = self._log_prob_from_distribution(pi, pi_action).unsqueeze(-1)
+
+        return pi, logp_a, pi_action
 
 
 class MLPCategoricalActor(Actor):
@@ -124,27 +140,20 @@ class MLPSquashedGaussianActor(Actor):
     def _log_prob_from_distribution(
         self, pi: Normal, act: torch.Tensor
     ) -> torch.Tensor:
-        logp_pi = pi.log_prob(act).sum(axis=-1)
-        logp_pi -= (2 * (np.log(2) - act - torch.nn.functional.softplus(-2 * act))).sum(
+        log_pi = pi.log_prob(act).sum(axis=-1)
+        log_pi -= (2 * (np.log(2) - act - torch.nn.functional.softplus(-2 * act))).sum(
             axis=1
         )
-        return logp_pi
+        return log_pi
 
-    def forward(self, obs, act=None, with_logprob=True):
-        pi_distribution = self._distribution(obs)
-        pi_action = pi_distribution.rsample()
-        if with_logprob:
-            logp_pi = self._log_prob_from_distribution(
-                pi_distribution, pi_action
-            ).unsqueeze(
-                -1
-            )  # [batch_size, 1]
-        else:
-            logp_pi = None
+    def forward(self, obs, with_logprob=True):
+        pi, log_pi, pi_action = super().forward(
+            obs, with_logprob=with_logprob, with_noise=True
+        )
 
         pi_action_tanh = torch.tanh(pi_action)  # [batch_size, act_dim]
 
-        return pi_action_tanh, logp_pi
+        return pi, log_pi, pi_action_tanh
 
 
 class Critic(ABC, nn.Module):

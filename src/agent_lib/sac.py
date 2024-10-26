@@ -96,7 +96,7 @@ class SACC(SAC):
     def act(self, obs) -> np.ndarray:
         if not isinstance(obs, torch.Tensor):
             obs = torch.tensor(obs, dtype=torch.float32).to(self.device)
-        act, _ = self.policy.forward(obs, with_logprob=False)
+        _, _, act = self.policy.forward(obs, with_logprob=False)
 
         return act.detach().cpu().numpy()
 
@@ -116,7 +116,7 @@ class SACC(SAC):
     def _calc_actor_loss(self, batch_data: BufferData) -> torch.Tensor:
         obs = batch_data.obs
 
-        act, logp_act = self.policy.forward(obs)
+        _, logp_act, act = self.policy.forward(obs)
         q_values = self.critic.forward(obs, act)
         min_q = torch.min(q_values, dim=-1, keepdim=True)[0]  # [batch_size, 1]
         # update alpha
@@ -142,7 +142,7 @@ class SACC(SAC):
 
         with torch.no_grad():
             # Target actions come from *current* policy
-            next_act, logp_act = self.policy.forward(next_obs)
+            _, logp_act, next_act = self.policy.forward(next_obs)
             alpha = self.alpha_log.exp()
             # Target Q-values
             next_q_values = self.critic_target.forward(
@@ -214,7 +214,12 @@ class SACD(SAC):
         pass
 
     def act(self, obs) -> np.ndarray:
-        pass
+        if not isinstance(obs, torch.Tensor):
+            obs = torch.tensor(obs, dtype=torch.float32).to(self.device)
+        with torch.no_grad:
+            _, _, act = self.policy.forward(obs=obs, with_logprob=False)
+
+        return act.detach().cpu().numpy()
 
     def learn(self, batch_data: BufferData) -> None:
         pass
