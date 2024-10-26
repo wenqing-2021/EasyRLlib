@@ -3,3 +3,4 @@ agent_name: "SAC"
 policy_lr: 0.0003 # DO NOT enter 1e-3, this will be regarded as a string
 critic_lr: 0.001
 alpha_lr: 0.0003
+tau: 0.005

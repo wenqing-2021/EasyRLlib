@@ -58,6 +58,9 @@ class PPO(OnPolicyAgent):
         self.update_times = configure.train_config.on_policy_train_config.update_times
 
     def act(self, obs) -> np.ndarray:
+        """
+        get the action from the policy network
+        """
         if isinstance(obs, np.ndarray):
             obs = torch.tensor(obs, dtype=torch.float32).to(self.device)
         with torch.no_grad():
