@@ -6,6 +6,7 @@ from src.train import TrainerFactory
 import torch
 import argparse
 import gymnasium as gym
+import os
 
 
 # create the environment
@@ -45,7 +46,10 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     run_config = load_config(args.config_path)
-
+    debug_mode = bool(os.getenv("DEBUG_MODE", False))
+    if debug_mode:
+        torch.autograd.set_detect_anomaly(True)
+        run_config.train_config.num_envs = 1
     mpi_fork(run_config.train_config.num_envs)  # run parallel code with mpi
 
     main(run_config)
