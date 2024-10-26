@@ -167,7 +167,7 @@
         "output_dir":	"output/DQN_test/DQN_test_s1"
     },
     "self":	{
-        "<src.train.off_policy_train.OffPolicyTrain object at 0x7f2687b246d0>":	{
+        "<src.train.off_policy_train.OffPolicyTrain object at 0x7fedb4a48b80>":	{
             "_ep_len":	0,
             "_ep_ret":	0,
             "configure":	{
@@ -333,7 +333,7 @@
                 }
             },
             "logger":	{
-                "<src.utils.logx.EpochLogger object at 0x7f2687b24610>":	{
+                "<src.utils.logx.EpochLogger object at 0x7fedb4a48ac0>":	{
                     "epoch_dict":	{},
                     "exp_name":	"DQN_test",
                     "first_row":	true,

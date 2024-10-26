@@ -102,6 +102,7 @@ class OffPolicyBuffer(BaseBuffer):
         self.obs_shape = obs_shape
         self.act_shape = act_shape
         self.count = 0
+        self.has_fill = False
         self._initialize(obs_shape, act_shape)
 
     def store(self, obs, act, next_obs, rew, done):
@@ -113,15 +114,20 @@ class OffPolicyBuffer(BaseBuffer):
         self.count += 1
         if self.count == self.buffer_size:
             self.count = 0
+            self.has_fill = True
 
     def get(self) -> BufferData:
         batch_data = BufferData(device=self.data.device)
-        if self.count < self.batch_size:
+        # check the self.count is more than zero
+        if not self.has_fill:
+            assert self.count > 0  # off-policy buffer has to store some data
+            target_batch_size = min(self.count, self.batch_size)
+            idx = np.random.choice(self.count, target_batch_size, replace=False)
             for k, v in self.data.__dict__.items():
                 if v is not None and isinstance(v, np.ndarray):
-                    batch_data.__dict__[k] = v[: self.count]
+                    batch_data.__dict__[k] = v[:idx]
         else:
-            idx = np.random.choice(self.count, self.batch_size, replace=False)
+            idx = np.random.choice(self.buffer_size, self.batch_size, replace=False)
             for k, v in self.data.__dict__.items():
                 if v is not None and isinstance(v, np.ndarray):
                     batch_data.__dict__[k] = v[idx]

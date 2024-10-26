@@ -91,10 +91,10 @@ class OffPolicyAgent(BaseAgent):
         self,
         observation_space: gym.Space,
         action_space: gym.Space,
-        device: str = None,
+        configure: RunConfig = None,
         logger: EpochLogger = None,
     ) -> None:
-        super().__init__(observation_space, action_space, device, logger)
+        super().__init__(observation_space, action_space, configure, logger)
         self.tau: float = None
         self.use_soft_update: bool = False
         self.target_net_list: List[nn.Module] = []
@@ -130,10 +130,10 @@ class OnPolicyAgent(BaseAgent):
         self,
         observation_space: gym.Space,
         action_space: gym.Space,
-        device: str = None,
+        configure: RunConfig = None,
         logger: EpochLogger = None,
     ) -> None:
-        super().__init__(observation_space, action_space, device, logger)
+        super().__init__(observation_space, action_space, configure, logger)
 
     @abstractmethod
     def calc_state_value(self, obs) -> np.ndarray:
