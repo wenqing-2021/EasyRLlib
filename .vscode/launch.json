@@ -5,17 +5,22 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Debug",
+            "name": "Train: Debug",
             "type": "debugpy",
             "request": "launch",
-            "program": "${file}",
+            "program": "${workspaceFolder}/run.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "cwd": "${workspaceFolder}",
             "args": [
                 "--config_path",
-                "/home/EasyRLlib/experiment/dqn_cartpole/run_config.yaml"
-            ]
+                // "/home/EasyRLlib/experiment/dqn_cartpole/run_config.yaml",
+                // "/home/EasyRLlib/experiment/ppo_BipedalWalker-v3/run_config.yaml",
+                "/home/EasyRLlib/experiment/ppo_cartpole/run_config.yaml",
+            ],
+            "env": {
+                "DEBUG_MODE": "1",
+            }
         },
     ]
 }
