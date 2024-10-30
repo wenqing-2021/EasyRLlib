@@ -296,6 +296,9 @@ class EpochLogger(Logger):
                 self.epoch_dict[k] = []
             self.epoch_dict[k].append(v)
 
+    def get_keys(self) -> list:
+        return self.epoch_dict.keys()
+
     def log_tabular(self, key, val=None, with_min_and_max=False, average_only=False):
         """
         Log a value or possibly the mean/std/min/max values of a diagnostic.
@@ -318,20 +321,40 @@ class EpochLogger(Logger):
         if val is not None:
             super().log_tabular(key, val)
         else:
-            v = self.epoch_dict[key]
-            vals = (
-                np.concatenate(v)
-                if isinstance(v[0], np.ndarray) and len(v[0].shape) > 0
-                else v
-            )
-            stats = mpi_statistics_scalar(vals, with_min_and_max=with_min_and_max)
-            super().log_tabular(key if average_only else "Average" + key, stats[0])
-            if not (average_only):
-                super().log_tabular("Std" + key, stats[1])
-            if with_min_and_max:
-                super().log_tabular("Max" + key, stats[3])
-                super().log_tabular("Min" + key, stats[2])
+            if key in self.epoch_dict.keys():
+                v = self.epoch_dict[key]
+                vals = (
+                    np.concatenate(v)
+                    if isinstance(v[0], np.ndarray) and len(v[0].shape) > 0
+                    else v
+                )
+                stats = mpi_statistics_scalar(vals, with_min_and_max=with_min_and_max)
+                super().log_tabular(key if average_only else "Average" + key, stats[0])
+                if not (average_only):
+                    super().log_tabular("Std" + key, stats[1])
+                if with_min_and_max:
+                    super().log_tabular("Max" + key, stats[3])
+                    super().log_tabular("Min" + key, stats[2])
+            else:
+                if proc_id() == 0:
+                    print(
+                        colorize(
+                            "Warning: value for %s not found in epoch_dict" % key,
+                            "red",
+                            bold=True,
+                        )
+                    )
         self.epoch_dict[key] = []
+
+    def dump_tabular(self, with_print: bool = True):
+        """
+        Call this at the end of an epoch to log all of the diagnostics from
+        """
+        # check if there is any data in the epoch_dict
+        for k in self.epoch_dict.keys():
+            if len(self.epoch_dict[k]) > 0:
+                self.log_tabular(k, average_only=True)
+        super().dump_tabular(with_print)
 
     def get_stats(self, key):
         """
