@@ -1,0 +1,10 @@
+agent_name: "DDPG" # name of the agent
+# norm config
+hidden_sizes: [256, 256]
+activation_name: "ReLU" # ["ReLU", "Tanh"]
+policy_lr: 0.001
+critic_lr: 0.001
+gamma: 0.99
+# ddpg config
+noise_std: 0.1 # policy action noise, if you want to use noise, set it to 0
+tau: 0.005 # target network update rate

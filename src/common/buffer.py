@@ -125,7 +125,7 @@ class OffPolicyBuffer(BaseBuffer):
             idx = np.random.choice(self.count, target_batch_size, replace=False)
             for k, v in self.data.__dict__.items():
                 if v is not None and isinstance(v, np.ndarray):
-                    batch_data.__dict__[k] = v[:idx]
+                    batch_data.__dict__[k] = v[idx]
         else:
             idx = np.random.choice(self.buffer_size, self.batch_size, replace=False)
             for k, v in self.data.__dict__.items():

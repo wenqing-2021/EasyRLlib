@@ -87,6 +87,29 @@ class Actor(ABC, nn.Module):
         return pi, logp_a, pi_action
 
 
+class MLPActor(Actor):
+    """
+    derictly output the action
+    """
+
+    def __init__(self, obs_dim, act_dim, hidden_sizes, activation):
+        super().__init__(obs_dim, act_dim)
+        self.pi_net = mlp(
+            [obs_dim] + list(hidden_sizes) + [act_dim],
+            activation,
+            output_activation=nn.Tanh,
+        )
+
+    def forward(self, obs):
+        return self.pi_net(obs)
+
+    def _distribution(self, obs):
+        pass
+
+    def _log_prob_from_distribution(self, pi, act):
+        pass
+
+
 class MLPCategoricalActor(Actor):
     def __init__(self, obs_dim, act_dim, hidden_sizes, activation):
         super().__init__(obs_dim, act_dim)

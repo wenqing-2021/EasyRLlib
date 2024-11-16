@@ -21,6 +21,7 @@ def load_policy_and_env(fpath, itr="last", deterministic=False):
     # determine if tf save or pytorch save
     if any(["tf1_save" in x for x in os.listdir(fpath)]):
         backend = "tf1"
+        raise ValueError("Tensorflow 1.x is not supported")
     else:
         backend = "pytorch"
 
@@ -28,12 +29,7 @@ def load_policy_and_env(fpath, itr="last", deterministic=False):
     if itr == "last":
         # check filenames for epoch (AKA iteration) numbers, find maximum value
 
-        if backend == "tf1":
-            saves = [
-                int(x[8:]) for x in os.listdir(fpath) if "tf1_save" in x and len(x) > 8
-            ]
-
-        elif backend == "pytorch":
+        if backend == "pytorch":
             pytsave_path = osp.join(fpath, "pyt_save")
             # Each file in this folder has naming convention 'modelXX.pt', where
             # 'XX' is either an integer or empty string. Empty string case
@@ -53,9 +49,7 @@ def load_policy_and_env(fpath, itr="last", deterministic=False):
         itr = "%d" % itr
 
     # load the get_action function
-    if backend == "tf1":
-        get_action = load_tf_policy(fpath, itr, deterministic)
-    else:
+    if backend == "pytorch":
         get_action = load_pytorch_policy(fpath, itr, deterministic)
 
     # try to load environment from save
