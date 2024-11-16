@@ -87,6 +87,12 @@ class SACConfig(AgentConfig):
 
 
 @dataclass
+class DDPGConfig(AgentConfig):
+    tau: float = 0.005
+    noise_std: float = 0.0
+
+
+@dataclass
 class RunConfig(BaseConfig):
     env_config: EnvConfig = None
     train_config: TrainConfig = None
@@ -97,7 +103,7 @@ class RunConfig(BaseConfig):
     exp_name: str = None
 
 
-AGENT_MAP = {"DQN": DQNConfig, "PPO": PPOConfig, "SAC": SACConfig}
+AGENT_MAP = {"DQN": DQNConfig, "PPO": PPOConfig, "SAC": SACConfig, "DDPG": DDPGConfig}
 
 ACTIVATION_MAP = {
     "Tanh": nn.Tanh,

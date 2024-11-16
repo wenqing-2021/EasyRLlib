@@ -6,3 +6,4 @@ from src.train.policy_train import TrainerFactory
 TrainerFactory.register_trainer("DQN", OffPolicyTrain)
 TrainerFactory.register_trainer("PPO", OnPolicyTrain)
 TrainerFactory.register_trainer("SAC", OffPolicyTrain)
+TrainerFactory.register_trainer("DDPG", OffPolicyTrain)

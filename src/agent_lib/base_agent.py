@@ -120,9 +120,12 @@ class OffPolicyAgent(BaseAgent):
             raise ValueError("The target and current network list should be the same!")
         if len(self.target_net_list) < 1:
             raise ValueError("The target network list is empty!")
-        for target_net, current_net in zip(self.target_net_list, self.current_net_list):
-            for tar, cur in zip(target_net.parameters(), current_net.parameters()):
-                tar.data.copy_(cur.data * self.tau + tar.data * (1.0 - self.tau))
+        with torch.no_grad():
+            for target_net, current_net in zip(
+                self.target_net_list, self.current_net_list
+            ):
+                for tar, cur in zip(target_net.parameters(), current_net.parameters()):
+                    tar.data.copy_(cur.data * self.tau + tar.data * (1.0 - self.tau))
 
 
 class OnPolicyAgent(BaseAgent):

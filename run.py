@@ -44,6 +44,14 @@ if __name__ == "__main__":
         help="Path to the config file",
         required=False,
     )
+    parser.add_argument(
+        "-d",
+        "--debug",
+        action="store_true",
+        default=False,
+        help="Run the code in debug mode",
+        required=False,
+    )
     args = parser.parse_args()
     run_config = load_config(args.config_path)
     debug_mode = bool(os.getenv("DEBUG_MODE", False))
