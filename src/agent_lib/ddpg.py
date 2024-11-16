@@ -93,12 +93,14 @@ class DDPG(OffPolicyAgent):
         critic_loss = self._calc_critic_loss(batch_data)
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
+        mpi_avg_grads(self.critic)
         self.critic_optimizer.step()
 
         # update actor
         actor_loss = self._calc_actor_loss(batch_data)
         self.actor_optimizer.zero_grad()
         actor_loss.backward()
+        mpi_avg_grads(self.actor)
         self.actor_optimizer.step()
 
     def _calc_actor_loss(self, batch_data: BufferData) -> torch.Tensor:

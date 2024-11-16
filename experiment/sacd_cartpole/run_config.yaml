@@ -6,7 +6,6 @@ train_config:
   seed: 1
   epochs: 50
   total_steps: 100000
-  num_envs: 4
   batch_size: 64
   buffer_size: 256
 

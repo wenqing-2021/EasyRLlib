@@ -16,8 +16,6 @@ class BaseTrainer(ABC):
         self.configure = configure
         self.env = env
         self._ep_ret, self._ep_len = 0, 0
-        # Special function to avoid certain slowdowns from PyTorch + MPI combo.
-        setup_pytorch_for_mpi()
 
         # Create logger
         logger_kwargs = EpochLogger.setup_logger_kwargs(
@@ -53,9 +51,11 @@ class BaseTrainer(ABC):
         return act_dim
 
     def _log_agent_param(self, agent) -> None:
+        # Special function to avoid certain slowdowns from PyTorch + MPI combo.
+        setup_pytorch_for_mpi()
         # Setup agent and count vars
-        self.logger.setup_pytorch_saver(agent)
         sync_params(agent)
+        self.logger.setup_pytorch_saver(agent)
         var_counts = count_vars(agent)
         self.logger.log("\nNumber of the model parameters: %d\n" % var_counts)
 

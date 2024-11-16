@@ -91,8 +91,13 @@ class OffPolicyTrain(BaseTrainer):
         for epoch in range(self.configure.train_config.epochs):
             self._agent_explore_learn(buffer=buffer, agent=agent)
 
+            if epoch % self.configure.train_config.save_freq == 0:
+                self.logger.save_state({"env": self.env}, itr=epoch)
+
             # store the nessarry information
             self.logger.log_tabular("Epoch", epoch)
             self.logger.log_tabular("EpRet", with_min_and_max=True)
             self.logger.log_tabular("EpLen", average_only=True)
             self.logger.dump_tabular()
+            if self.configure.train_config.render:
+                self._render_env(agent)
