@@ -54,7 +54,6 @@ train_config:
   seed: 1
   epochs: 25
   total_steps: 1000000 # normally is 1e6
-  num_envs: 4
   batch_size: 32 # if use on-policy algorithm, the batch_size is the same as the buffer_size
   buffer_size: 256 # if use the on-policy algorithm, the buffer_size would be int(total_steps/epochs/num_envs)
 
@@ -90,6 +89,6 @@ python3 run.py -c src/config/run_config.yaml
 |    DQN     |     **YES**     |      **NO**      |
 |    SAC     |     **YES**     |     **YES**      |
 |    PPO     |     **YES**     |     **YES**      |
-|    DDPG    |     **NO**      |     **TODO**     |
+|    DDPG    |     **NO**      |     **YES**     |
 |    TD3     |     **NO**      |     **TODO**     |
 |    A2C     |    **TODO**     |     **TODO**     |

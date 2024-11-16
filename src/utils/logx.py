@@ -152,7 +152,7 @@ class Logger:
             with open(osp.join(self.output_dir, "config.json"), "w") as out:
                 out.write(output)
 
-    def save_state(self, state_dict, itr=None):
+    def save_state(self, state_dict, save_pkl: bool = False, itr=None):
         """
         Saves the state of an experiment.
 
@@ -174,11 +174,12 @@ class Logger:
             itr: An int, or None. Current iteration of training.
         """
         if proc_id() == 0:
-            fname = "vars.pkl" if itr is None else "vars%d.pkl" % itr
-            try:
-                joblib.dump(state_dict, osp.join(self.output_dir, fname))
-            except:
-                self.log("Warning: could not pickle state_dict.", color="red")
+            if save_pkl:
+                fname = "vars.pkl" if itr is None else "vars%d.pkl" % itr
+                try:
+                    joblib.dump(state_dict, osp.join(self.output_dir, fname))
+                except:
+                    self.log("Warning: could not pickle state_dict.", color="red")
             if hasattr(self, "pytorch_saver_elements"):
                 self._pytorch_simple_save(itr)
 
@@ -221,7 +222,7 @@ class Logger:
                 # something different for your personal PyTorch project.
                 # We use a catch_warnings() context to avoid the warnings about
                 # not being able to save the source code.
-                torch.save(self.pytorch_saver_elements, fname)
+                torch.save(self.pytorch_saver_elements.state_dict(), fname)
 
     def dump_tabular(self, with_print: bool = True):
         """

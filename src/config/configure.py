@@ -47,12 +47,12 @@ class TrainConfig(BaseConfig):
     seed: int = 1
     epochs: int = 100
     total_steps: int = 1e6
-    num_envs: int = 4
     batch_size: int = 64
     buffer_size: int = 1e5
     off_policy_train_config: OffPolicyTrainConfig = None
     on_policy_train_config: OnPolicyTrainConfig = None
     render: bool = False
+    save_freq: int = 1
 
 
 @dataclass
@@ -103,7 +103,12 @@ class RunConfig(BaseConfig):
     exp_name: str = None
 
 
-AGENT_MAP = {"DQN": DQNConfig, "PPO": PPOConfig, "SAC": SACConfig, "DDPG": DDPGConfig}
+AGENT_MAP = {
+    "DQN": {"config": DQNConfig, "train": "OffPolicyTrain"},
+    "PPO": {"config": PPOConfig, "train": "OnPolicyTrain"},
+    "SAC": {"config": SACConfig, "train": "OffPolicyTrain"},
+    "DDPG": {"config": DDPGConfig, "train": "OffPolicyTrain"},
+}
 
 ACTIVATION_MAP = {
     "Tanh": nn.Tanh,
@@ -123,7 +128,7 @@ def load_config(config_path: str = None) -> RunConfig:
         agent_config_dict = yaml.safe_load(agent_yaml)
         agent_name = agent_config_dict["agent_name"]
         try:
-            agent_config = AGENT_MAP[agent_name].from_dict(agent_config_dict)
+            agent_config = AGENT_MAP[agent_name]["config"].from_dict(agent_config_dict)
         except KeyError:
             raise KeyError(
                 f"Agent {agent_name} not supported. Please load agent from {list(AGENT_MAP.keys())}"

@@ -1,12 +1,26 @@
 from src.train.policy_train import BaseTrainer
-from src.config.configure import RunConfig, load_config
+from src.config.configure import RunConfig, load_config, AGENT_MAP
 from src.utils.mpi_tools import mpi_fork
-from src.agent_lib import AgentFactory
-from src.train import TrainerFactory
+from src.agent_lib import AgentFactory, AGENT_LIB_MAP
+from src.train import TrainerFactory, TRAIN_MAP
 import torch
 import argparse
 import gymnasium as gym
 import os
+
+
+def setup_agent():
+    # register agent
+    AgentFactory.register_agent("DQN", AGENT_LIB_MAP["DQN"])
+    AgentFactory.register_agent("PPO", AGENT_LIB_MAP["PPO"])
+    AgentFactory.register_agent("SAC", AGENT_LIB_MAP["SAC"])
+    AgentFactory.register_agent("DDPG", AGENT_LIB_MAP["DDPG"])
+
+    # register trainer
+    TrainerFactory.register_trainer("DQN", TRAIN_MAP[AGENT_MAP["DQN"]["train"]])
+    TrainerFactory.register_trainer("PPO", TRAIN_MAP[AGENT_MAP["PPO"]["train"]])
+    TrainerFactory.register_trainer("SAC", TRAIN_MAP[AGENT_MAP["SAC"]["train"]])
+    TrainerFactory.register_trainer("DDPG", TRAIN_MAP[AGENT_MAP["DDPG"]["train"]])
 
 
 # create the environment
@@ -52,12 +66,21 @@ if __name__ == "__main__":
         help="Run the code in debug mode",
         required=False,
     )
+    parser.add_argument(
+        "-n",
+        "--num_envs",
+        type=int,
+        default=4,
+        help="Number of parallel environments",
+        required=False,
+    )
     args = parser.parse_args()
-    run_config = load_config(args.config_path)
-    debug_mode = bool(os.getenv("DEBUG_MODE", False))
+    debug_mode = bool(os.getenv("DEBUG_MODE", False)) or args.debug
     if debug_mode:
         torch.autograd.set_detect_anomaly(True)
-        run_config.train_config.num_envs = 1
-    mpi_fork(run_config.train_config.num_envs)  # run parallel code with mpi
+        args.num_envs = 1
+    mpi_fork(args.num_envs)  # run parallel code with mpi
+    setup_agent()
+    run_config = load_config(args.config_path)
 
     main(run_config)
