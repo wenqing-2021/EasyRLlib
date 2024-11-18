@@ -1,6 +1,6 @@
 # this file is the configuration file for the training process
 env_config:
-  env_name: "BipedalWalker-v3"
+  env_name: "Pendulum-v1"
 
 train_config:
   seed: 3456
@@ -21,6 +21,6 @@ train_config:
 
 
 agent_config_path: "src/config/agent_config/ddpg.yaml"
-exp_name: "DDPG_BipedalWalker"
+exp_name: "DDPG_Pendulum"
 save_path: "output/"
 device: "cuda"
