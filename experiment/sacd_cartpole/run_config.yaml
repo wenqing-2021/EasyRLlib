@@ -4,8 +4,8 @@ env_config:
 
 train_config:
   seed: 1
-  epochs: 50
-  total_steps: 100000
+  epochs: 250
+  total_steps: 1000000
   batch_size: 64
   buffer_size: 256
 
@@ -20,6 +20,6 @@ train_config:
 
 
 agent_config_path: "src/config/agent_config/sac.yaml"
-exp_name: "SACD_test"
+exp_name: "SACD_CartPole"
 save_path: "output/"
 device: "cuda"

@@ -2,6 +2,16 @@
 
 set -e
 
-export EXPERIMENT_NAME="dqn_cartpole"
+# 定义实验列表
+PARAMS=("dqn_cartpole"
+        "ddpg_Pendulum-v1"
+        "ppo_BipedalWalker-v3"
+        "ppo_cartpole"
+        "sac_BipedalWalker-v3"
+        "sacd_cartpole"
+        )
 
-python3 run.py -c experiment/${EXPERIMENT_NAME}/run_config.yaml
+for param in "${PARAMS[@]}"; do
+    echo "Executing $PROGRAM with parameter: $param"
+    python3 run.py -c experiment/${param}/run_config.yaml
+done
