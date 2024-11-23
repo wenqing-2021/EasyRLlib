@@ -20,6 +20,6 @@ train_config:
 
 
 agent_config_path: "src/config/agent_config/dqn.yaml"
-exp_name: "DQN_test"
+exp_name: "DQN_CartPole"
 save_path: "output/"
 device: "cuda"
