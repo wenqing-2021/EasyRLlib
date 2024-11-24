@@ -18,8 +18,9 @@
                 // "/home/EasyRLlib/experiment/ppo_BipedalWalker-v3/run_config.yaml",
                 // "/home/EasyRLlib/experiment/ppo_cartpole/run_config.yaml",
                 // "/home/EasyRLlib/experiment/sacd_cartpole/run_config.yaml",
-                "/home/EasyRLlib/experiment/ddpg_BipedalWalker-v3/run_config.yaml",
+                // "/home/EasyRLlib/experiment/ddpg_BipedalWalker-v3/run_config.yaml",
                 // "/home/EasyRLlib/experiment/sac_BipedalWalker-v3/run_config.yaml",
+                "/home/EasyRLlib/experiment/td3_BipedalWalker-v3/run_config.yaml",
                 "--debug",
             ],
             "env": {

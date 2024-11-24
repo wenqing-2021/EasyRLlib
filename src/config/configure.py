@@ -93,6 +93,20 @@ class DDPGConfig(AgentConfig):
 
 
 @dataclass
+class TD3Config(AgentConfig):
+    tau: float = 0.005
+    noise_std: float = 0.0
+    target_noise: float = 0.2
+    noise_clip: float = 0.5
+    policy_delay: int = 2
+
+
+@dataclass
+class A2CConfig(AgentConfig):
+    pass
+
+
+@dataclass
 class RunConfig(BaseConfig):
     env_config: EnvConfig = None
     train_config: TrainConfig = None
@@ -108,6 +122,8 @@ AGENT_MAP = {
     "PPO": {"config": PPOConfig, "train": "OnPolicyTrain"},
     "SAC": {"config": SACConfig, "train": "OffPolicyTrain"},
     "DDPG": {"config": DDPGConfig, "train": "OffPolicyTrain"},
+    "TD3": {"config": TD3Config, "train": "OffPolicyTrain"},
+    "A2C": {"config": A2CConfig, "train": "OnPolicyTrain"},
 }
 
 ACTIVATION_MAP = {
