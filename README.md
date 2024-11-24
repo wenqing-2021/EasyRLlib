@@ -90,5 +90,11 @@ python3 run.py -c src/config/run_config.yaml
 |    SAC     |     **YES**     |     **YES**      |
 |    PPO     |     **YES**     |     **YES**      |
 |    DDPG    |     **NO**      |     **YES**     |
-|    TD3     |     **NO**      |     **TODO**     |
+|    TD3     |     **NO**      |     **YES**     |
 |    A2C     |    **TODO**     |     **TODO**     |
+|    Dueling DQN     |    **TODO**     |     **TODO**     |
+
+
+## 4. Reference
+- https://github.com/openai/spinningup?tab=MIT-1-ov-file
+- https://github.com/AI4Finance-Foundation/ElegantRL
