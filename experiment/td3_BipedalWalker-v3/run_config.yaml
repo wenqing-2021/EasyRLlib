@@ -1,0 +1,26 @@
+# this file is the configuration file for the training process
+env_config:
+  env_name: "BipedalWalker-v3"
+
+train_config:
+  seed: 123
+  epochs: 250
+  total_steps: 1000000
+  batch_size: 64
+  buffer_size: 100000
+  render: False
+
+  off_policy_train_config:
+    update_every: 10
+    random_explor_steps: 10000
+    soft_update_every: 10
+  
+  on_policy_train_config:
+    update_times: 80
+    max_ep_len: 1600
+
+
+agent_config_path: "src/config/agent_config/td3.yaml"
+exp_name: "TD3_BipedalWalker"
+save_path: "output/"
+device: "cuda"

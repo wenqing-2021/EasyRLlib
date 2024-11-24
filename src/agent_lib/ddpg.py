@@ -106,8 +106,8 @@ class DDPG(OffPolicyAgent):
     def _calc_actor_loss(self, batch_data: BufferData) -> torch.Tensor:
         obs = batch_data.obs
         act_mu = self.actor(obs)
-        # act = self._get_act(act_mu)
-        loss_pi = -self.critic(obs, act_mu).mean()
+        act = self._get_act(act_mu)
+        loss_pi = -self.critic(obs, act).mean()
 
         return loss_pi
 
@@ -117,8 +117,8 @@ class DDPG(OffPolicyAgent):
         next_obs = batch_data.next_obs
         with torch.no_grad():
             next_act_mu = self.actor_target(next_obs)
-            # next_act = self._get_act(next_act_mu)
-            next_q = self.critic_target(next_obs, next_act_mu)
+            next_act = self._get_act(next_act_mu)
+            next_q = self.critic_target(next_obs, next_act)
             target_q = batch_data.rew + self.gamma * (1 - batch_data.done) * next_q
 
         current_q = self.critic(obs, act)

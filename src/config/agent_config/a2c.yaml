@@ -1,0 +1,7 @@
+agent_name: "A2C" # ["A2C"]
+hidden_sizes: [64, 64]
+activation_name: "Tanh" # ["ReLU", "Tanh"]
+policy_lr: 0.0003 # DO NOT enter 1e-3, this will be regarded as a string
+critic_lr: 0.001
+lam: 0.97
+gamma: 0.99

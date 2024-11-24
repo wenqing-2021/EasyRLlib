@@ -15,12 +15,16 @@ def setup_agent():
     AgentFactory.register_agent("PPO", AGENT_LIB_MAP["PPO"])
     AgentFactory.register_agent("SAC", AGENT_LIB_MAP["SAC"])
     AgentFactory.register_agent("DDPG", AGENT_LIB_MAP["DDPG"])
+    AgentFactory.register_agent("TD3", AGENT_LIB_MAP["TD3"])
+    AgentFactory.register_agent("A2C", AGENT_LIB_MAP["A2C"])
 
     # register trainer
     TrainerFactory.register_trainer("DQN", TRAIN_MAP[AGENT_MAP["DQN"]["train"]])
     TrainerFactory.register_trainer("PPO", TRAIN_MAP[AGENT_MAP["PPO"]["train"]])
     TrainerFactory.register_trainer("SAC", TRAIN_MAP[AGENT_MAP["SAC"]["train"]])
     TrainerFactory.register_trainer("DDPG", TRAIN_MAP[AGENT_MAP["DDPG"]["train"]])
+    TrainerFactory.register_trainer("TD3", TRAIN_MAP[AGENT_MAP["TD3"]["train"]])
+    TrainerFactory.register_trainer("A2C", TRAIN_MAP[AGENT_MAP["A2C"]["train"]])
 
 
 # create the environment

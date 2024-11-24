@@ -1,0 +1,25 @@
+# this file is the configuration file for the training process
+env_config:
+  env_name: "CartPole-v1"
+
+train_config:
+  seed: 1
+  epochs: 250
+  total_steps: 1000000
+  batch_size: 64
+  buffer_size: 256
+
+  off_policy_train_config:
+    update_every: 10
+    random_explor_steps: 1000
+    soft_update_every: 50
+  
+  on_policy_train_config:
+    update_times: 80
+    max_ep_len: 500
+
+
+agent_config_path: "src/config/agent_config/a2c.yaml"
+exp_name: "A2C_CartPole"
+save_path: "output/"
+device: "cuda"
