@@ -91,7 +91,7 @@ python3 run.py -c src/config/run_config.yaml
 |    PPO     |     **YES**     |     **YES**      |
 |    DDPG    |     **NO**      |     **YES**     |
 |    TD3     |     **NO**      |     **YES**     |
-|    A2C     |    **TODO**     |     **TODO**     |
+|    A2C     |    **YES**     |     **YES**     |
 |    Dueling DQN     |    **TODO**     |     **TODO**     |
 
 

@@ -56,15 +56,18 @@ class TD3(DDPG):
                 -self.noise_clip,
                 self.noise_clip,
             )
-            next_act = torch.clamp(next_act + epsilon, -self.act_limit, self.act_limit)
+            next_act = torch.clamp(
+                next_act + epsilon, self.act_limit[0], self.act_limit[1]
+            )
 
             next_q = self.critic_target(next_obs, next_act).min(dim=-1, keepdim=True)[0]
             target_q = batch_data.rew + self.gamma * (1 - batch_data.done) * next_q
 
         current_q = self.critic(obs, act)
-        loss_q = self.mse(current_q, target_q)
+        target_q = target_q.expand_as(current_q)
+        loss_q = self.mse(current_q, target_q).mean(dim=0, keepdim=True)
 
-        return loss_q.mean()
+        return loss_q.sum()
 
     def learn(self, batch_data: BufferData) -> None:
         # update critic

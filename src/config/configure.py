@@ -102,6 +102,11 @@ class TD3Config(AgentConfig):
 
 
 @dataclass
+class A2CConfig(AgentConfig):
+    pass
+
+
+@dataclass
 class RunConfig(BaseConfig):
     env_config: EnvConfig = None
     train_config: TrainConfig = None
@@ -118,6 +123,7 @@ AGENT_MAP = {
     "SAC": {"config": SACConfig, "train": "OffPolicyTrain"},
     "DDPG": {"config": DDPGConfig, "train": "OffPolicyTrain"},
     "TD3": {"config": TD3Config, "train": "OffPolicyTrain"},
+    "A2C": {"config": A2CConfig, "train": "OnPolicyTrain"},
 }
 
 ACTIVATION_MAP = {
