@@ -1,0 +1,36 @@
+[project]
+name = "easyrllib"
+version = "0.1.0"
+description = "A compact PyTorch reinforcement-learning library."
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "gymnasium[all]>=1.0",
+    "joblib>=1.4",
+    "matplotlib>=3.8",
+    "mpi4py>=4.0",
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "PyYAML>=6.0",
+    "scipy>=1.13",
+    "seaborn>=0.13",
+    "torch>=2.5",
+]
+
+[tool.uv.extra-build-dependencies]
+box2d-py = ["swig>=4.3"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.8",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
+
+[tool.ruff]
+target-version = "py310"
+extend-exclude = ["output"]

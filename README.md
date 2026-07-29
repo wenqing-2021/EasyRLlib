@@ -1,100 +1,82 @@
 # EasyRLlib
 
-EasyRLlib is implemented by Pytorch including the common safe rl algorithms.
+EasyRLlib is a compact PyTorch reinforcement-learning library with a
+reproducible `uv` environment. It includes DQN, Dueling DQN, PPO, SAC, DDPG,
+TD3, and A2C implementations for Gymnasium environments.
 
-## 1. Installation
+## Demos
 
-### 1.1 Install the docker:
+**Dueling DQN — CartPole-v1**
 
-```
-bash script/tools/install_docker.sh
-```
+![Dueling DQN solves CartPole](assets/demos/DuelingDQN_CartPole_eval.gif)
 
-### 1.2 Install the nvidia-container-toolkit
+**PPO — BipedalWalker-v3**
 
-```
-bash script/tools/install_nvidia_container_toolkit.sh
-```
+![PPO on BipedalWalker](assets/demos/PPO_BipedalWalker_eval.gif)
 
-### 1.3 Enter the env docker
+## Setup
 
-```
-bash script/tools/enter_dev_env.sh
-```
-
-### 1.4 Install the nessecary extension
-
-```
-bash script/tools/install_extensions.sh
-```
-
----
-
-Then, you **NEED** to update the environment source, `vim ~/.bashrc`, and add the following command at the end of the file:
-
-```
-export OMPI_ALLOW_RUN_AS_ROOT=1
-export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
-```
-
-Finally, you **NEED** to run: `source ~/.bashrc` in the terminal.
-
-## 2. Run
-
-### 2.1 Specific your config
-
-you can update the configure as the following format yaml and put it in the experiment path.
-
-```yaml
-# this file is the configuration file for the training process
-env_config:
-  env_name: "CartPole-v1" # set the env_name
-
-train_config:
-  seed: 1
-  epochs: 25
-  total_steps: 1000000 # normally is 1e6
-  batch_size: 32 # if use on-policy algorithm, the batch_size is the same as the buffer_size
-  buffer_size: 256 # if use the on-policy algorithm, the buffer_size would be int(total_steps/epochs/num_envs)
-
-  off_policy_train_config:
-    update_every: 25 # update the network every steps
-    random_explor_steps: 20000 # random explore the env before the training
-    soft_update_every: 100 # update the target network every steps
-
-  on_policy_train_config:
-    update_times: 80 # set the update_times, update the network times
-    max_ep_len: 1000 # set the max_ep_len, the max length of the episode
-
-agent_config_path: "src/config/agent_config/ppo.yaml"
-exp_name: "DQN"
-save_path: "output/"
-device: "cpu" # set the device, "cuda" or "cpu"
-```
-
-you may define the agent config where is put in the root: `src/config/agent_config`
-
-### 2.2 Run the training
-
-you can change the run_config as you changed:
+EasyRLlib supports Python 3.10--3.12. Install [uv](https://docs.astral.sh/uv/)
+and create the locked development environment:
 
 ```bash
-python3 run.py -c src/config/run_config.yaml
+uv sync --all-groups
 ```
 
-## 3. Surpport Agent List
+Gymnasium is installed with its full optional dependency set, including
+Classic Control, Box2D, Atari, and MuJoCo. Linux users also need a system MPI
+implementation (for example, `libopenmpi-dev` on Ubuntu/Debian).
 
-| Agent Name | Discrete Action | Continous Action |
-| :--------: | :-------------: | :--------------: |
-|    DQN     |     **YES**     |      **NO**      |
-|    SAC     |     **YES**     |     **YES**      |
-|    PPO     |     **YES**     |     **YES**      |
-|    DDPG    |     **NO**      |     **YES**     |
-|    TD3     |     **NO**      |     **YES**     |
-|    A2C     |    **YES**     |     **YES**     |
-|    Dueling DQN     |    **TODO**     |     **TODO**     |
+Run the test suite:
 
+```bash
+uv run pytest
+```
 
-## 4. Reference
-- https://github.com/openai/spinningup?tab=MIT-1-ov-file
-- https://github.com/AI4Finance-Foundation/ElegantRL
+## Train
+
+Experiments are configured with YAML files. For example, train Dueling DQN on
+CartPole with CUDA when an NVIDIA GPU is available:
+
+```bash
+uv run python run.py -n 1 -c experiment/dueling_dqn_cartpole/run_config.yaml
+```
+
+Set `device: "cpu"` in a run configuration to train without CUDA. Training
+logs and checkpoints are written below `output/`.
+
+## Visualize and evaluate
+
+Create reward curves for every run below `output/`:
+
+```bash
+uv run python script/visualize_results.py curves
+```
+
+Evaluate and render the included Dueling DQN or PPO BipedalWalker checkpoints:
+
+```bash
+uv run python script/visualize_results.py evaluate
+uv run python script/visualize_results.py evaluate-ppo
+```
+
+Generated plots, GIFs, and evaluation metrics are written to `vis/`, which is
+intentionally Git-ignored. The two GIFs shown above are tracked copies in
+`assets/demos/` for this README.
+
+## Algorithms
+
+| Algorithm | Discrete actions | Continuous actions |
+| --- | :---: | :---: |
+| DQN | Yes | No |
+| Dueling DQN | Yes | No |
+| SAC | Yes | Yes |
+| PPO | Yes | Yes |
+| DDPG | No | Yes |
+| TD3 | No | Yes |
+| A2C | Yes | Yes |
+
+## References
+
+- [OpenAI Spinning Up](https://github.com/openai/spinningup)
+- [ElegantRL](https://github.com/AI4Finance-Foundation/ElegantRL)

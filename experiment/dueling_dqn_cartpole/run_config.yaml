@@ -1,0 +1,21 @@
+# Dueling DQN training configuration for CartPole.
+env_config:
+  env_name: "CartPole-v1"
+
+train_config:
+  seed: 1
+  epochs: 250
+  total_steps: 1000000
+  batch_size: 64
+  buffer_size: 10000
+  save_freq: 25
+
+  off_policy_train_config:
+    update_every: 10
+    random_explor_steps: 1000
+    soft_update_every: 50
+
+agent_config_path: "src/config/agent_config/dueling_dqn.yaml"
+exp_name: "DuelingDQN_CartPole"
+save_path: "output/"
+device: "cuda"
