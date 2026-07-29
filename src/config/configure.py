@@ -119,6 +119,7 @@ class RunConfig(BaseConfig):
 
 AGENT_MAP = {
     "DQN": {"config": DQNConfig, "train": "OffPolicyTrain"},
+    "DuelingDQN": {"config": DQNConfig, "train": "OffPolicyTrain"},
     "PPO": {"config": PPOConfig, "train": "OnPolicyTrain"},
     "SAC": {"config": SACConfig, "train": "OffPolicyTrain"},
     "DDPG": {"config": DDPGConfig, "train": "OffPolicyTrain"},

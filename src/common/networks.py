@@ -45,6 +45,41 @@ class QNet(nn.Module):
         return decode_q
 
 
+class DuelingQNet(nn.Module):
+    """Q-network that estimates state value and per-action advantages separately.
+
+    For every Q head it computes ``Q(s, a) = V(s) + A(s, a) - mean_a A(s, a)``.
+    Centering the advantages removes the otherwise non-identifiable offset between
+    the value and advantage streams.
+    """
+
+    def __init__(self, obs_dim, act_dim, hidden_sizes, activation, q_num=1):
+        super().__init__()
+        if not hidden_sizes:
+            raise ValueError("Dueling Q-networks require at least one hidden layer")
+
+        self.net_encode = mlp([obs_dim] + list(hidden_sizes), activation)
+        self.q_num = q_num
+        self.act_dim = act_dim
+        self.value_decode_list = nn.ModuleList(
+            [mlp([hidden_sizes[-1], 1], activation) for _ in range(q_num)]
+        )
+        self.advantage_decode_list = nn.ModuleList(
+            [mlp([hidden_sizes[-1], act_dim], activation) for _ in range(q_num)]
+        )
+
+    def forward(self, obs):
+        encode_feat = self.net_encode(obs)
+        q_values = []
+        for value_decode, advantage_decode in zip(
+            self.value_decode_list, self.advantage_decode_list
+        ):
+            value = value_decode(encode_feat).reshape(-1, 1)
+            advantage = advantage_decode(encode_feat).reshape(-1, self.act_dim)
+            q_values.append(value + advantage - advantage.mean(dim=-1, keepdim=True))
+        return torch.stack(q_values, dim=0)
+
+
 class Actor(ABC, nn.Module):
     def __init__(self, obs_dim, act_dim) -> None:
         super().__init__()

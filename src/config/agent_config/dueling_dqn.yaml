@@ -1,0 +1,9 @@
+agent_name: "DuelingDQN"
+
+hidden_sizes: [64, 64]
+activation_name: "ReLU"
+policy_lr: 0.001
+gamma: 0.99
+epsilon: 0.1
+tau: 0.005
+q_num: 2

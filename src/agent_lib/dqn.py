@@ -1,4 +1,4 @@
-from src.common.networks import QNet
+from src.common.networks import DuelingQNet, QNet
 from src.agent_lib.base_agent import OffPolicyAgent
 from src.common.buffer import BufferData
 from src.config.configure import RunConfig
@@ -13,6 +13,8 @@ import copy
 
 
 class DQN(OffPolicyAgent):
+    q_network_cls = QNet
+
     def __init__(
         self,
         observation_space: gym.Space = None,
@@ -32,7 +34,7 @@ class DQN(OffPolicyAgent):
         self.epsilon = configure.agent_config.epsilon
         self.gamma = configure.agent_config.gamma
         self.q_num = configure.agent_config.q_num
-        self.policy = QNet(
+        self.policy = self.q_network_cls(
             obs_dim=self.obs_dim,
             act_dim=self.act_dim,
             hidden_sizes=self.hidden_sizes,
@@ -88,3 +90,9 @@ class DQN(OffPolicyAgent):
         loss.backward()
         mpi_avg_grads(self.policy)
         self.policy_optimizer.step()
+
+
+class DuelingDQN(DQN):
+    """DQN with the same update rule and a dueling value/advantage network."""
+
+    q_network_cls = DuelingQNet

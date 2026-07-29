@@ -12,6 +12,7 @@ import os
 def setup_agent():
     # register agent
     AgentFactory.register_agent("DQN", AGENT_LIB_MAP["DQN"])
+    AgentFactory.register_agent("DuelingDQN", AGENT_LIB_MAP["DuelingDQN"])
     AgentFactory.register_agent("PPO", AGENT_LIB_MAP["PPO"])
     AgentFactory.register_agent("SAC", AGENT_LIB_MAP["SAC"])
     AgentFactory.register_agent("DDPG", AGENT_LIB_MAP["DDPG"])
@@ -20,6 +21,9 @@ def setup_agent():
 
     # register trainer
     TrainerFactory.register_trainer("DQN", TRAIN_MAP[AGENT_MAP["DQN"]["train"]])
+    TrainerFactory.register_trainer(
+        "DuelingDQN", TRAIN_MAP[AGENT_MAP["DuelingDQN"]["train"]]
+    )
     TrainerFactory.register_trainer("PPO", TRAIN_MAP[AGENT_MAP["PPO"]["train"]])
     TrainerFactory.register_trainer("SAC", TRAIN_MAP[AGENT_MAP["SAC"]["train"]])
     TrainerFactory.register_trainer("DDPG", TRAIN_MAP[AGENT_MAP["DDPG"]["train"]])
